@@ -2,7 +2,7 @@ const ItemsDB = {
     // Runas de captura
     rune_common: {
         id: 'rune_common',
-        name: 'Runa Comum',
+        name: 'Runa de Vinculação I',
         icon: 'icon_rune_common',
         type: 'rune',
         captureRate: 1.0,
@@ -12,7 +12,7 @@ const ItemsDB = {
     },
     rune_advanced: {
         id: 'rune_advanced',
-        name: 'Runa Avançada',
+        name: 'Runa de Vinculação II',
         icon: 'icon_rune_advanced',
         type: 'rune',
         captureRate: 1.5,
@@ -22,7 +22,7 @@ const ItemsDB = {
     },
     rune_rare: {
         id: 'rune_rare',
-        name: 'Runa Rara',
+        name: 'Runa de Vinculação III',
         icon: 'icon_rune_rare',
         type: 'rune',
         captureRate: 2.5,
@@ -32,27 +32,27 @@ const ItemsDB = {
     },
 
     // Poções
-    potion_small: {
-        id: 'potion_small',
-        name: 'Poção Pequena',
+    rune_heal_small: {
+        id: 'rune_heal_small',
+        name: 'Runa de Cura Pequena',
         icon: 'icon_rune_heal_small',
         type: 'consumable',
         healAmount: 30,
         price: 50,
         description: 'Recupera 30 HP.'
     },
-    potion_medium: {
-        id: 'potion_medium',
-        name: 'Poção Média',
+    rune_heal_medium: {
+        id: 'rune_heal_medium',
+        name: 'Runa de Cura Média',
         icon: 'icon_rune_heal_medium',
         type: 'consumable',
         healAmount: 70,
         price: 150,
         description: 'Recupera 70 HP.'
     },
-    potion_large: {
-        id: 'potion_large',
-        name: 'Poção Grande',
+    rune_heal_large: {
+        id: 'rune_heal_large',
+        name: 'Runa de Cura Grande',
         icon: 'icon_rune_heal_large',
         type: 'consumable',
         healAmount: 150,
@@ -61,27 +61,27 @@ const ItemsDB = {
     },
 
     // Cura de status
-    antidote: {
-        id: 'antidote',
-        name: 'Antídoto',
-        icon: 'icon_rune_antidote',
+    rune_heal_antidote: {
+        id: 'rune_heal_antidote',
+        name: 'Runa de Antídoto',
+        icon: 'icon_rune_heal_antidote',
         type: 'consumable',
         cureStatus: 'poison',
         price: 75,
         description: 'Cura envenenamento.'
     },
-    thaw_crystal: {
-        id: 'thaw_crystal',
-        name: 'Cristal de Degelo',
+    rune_heal_ice: {
+        id: 'rune_heal_ice',
+        name: 'Runa de Degelo',
         icon: 'icon_rune_heal_ice',
         type: 'consumable',
         cureStatus: 'freeze',
         price: 75,
         description: 'Descongela a criatura.'
     },
-    full_cure: {
-        id: 'full_cure',
-        name: 'Cura Total',
+    rune_heal_all: {
+        id: 'rune_heal_all',
+        name: 'Runa de Cura Total',
         icon: 'icon_rune_heal_all',
         type: 'consumable',
         cureStatus: 'all',
@@ -93,11 +93,11 @@ const ItemsDB = {
 // Inventário inicial do jogador
 const DEFAULT_INVENTORY = {
     rune_common: 5,
-    potion_small: 3
+    rune_heal_small: 3
 };
 
 // Itens da loja por mapa
 const ShopInventory = {
-    town: ['rune_common', 'rune_advanced', 'potion_small', 'potion_medium', 'antidote', 'full_cure'],
-    route3_shop: ['rune_common', 'rune_advanced', 'rune_rare', 'potion_medium', 'potion_large', 'full_cure', 'thaw_crystal']
+    town: ['rune_common', 'rune_advanced', 'rune_heal_small', 'rune_heal_medium', 'rune_heal_antidote', 'rune_heal_all'],
+    route3_shop: ['rune_common', 'rune_advanced', 'rune_rare', 'rune_heal_medium', 'rune_heal_large', 'rune_heal_all', 'rune_heal_ice']
 };
