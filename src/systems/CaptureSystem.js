@@ -6,9 +6,9 @@ class CaptureSystem {
     /**
      * Calcula chance de captura
      */
-    static calculateCaptureChance(creature, sphereId, achievementBonus = 0) {
-        const sphere = ItemsDB[sphereId];
-        if (!sphere) return 0;
+    static calculateCaptureChance(creature, runeId, achievementBonus = 0) {
+        const rune = ItemsDB[runeId];
+        if (!rune) return 0;
 
         // Base chance
         let chance = 0.5;
@@ -35,8 +35,8 @@ class CaptureSystem {
         // Genetics penalty (criaturas de genética alta são mais difíceis)
         chance -= (creature.genetics - 1) * 0.05;
 
-        // Sphere multiplier
-        chance *= sphere.captureRate;
+        // rune multiplier
+        chance *= rune.captureRate;
 
         // Achievement bonus
         chance += achievementBonus;
@@ -48,8 +48,8 @@ class CaptureSystem {
     /**
      * Tenta capturar uma criatura
      */
-    static attemptCapture(creature, sphereId, achievementBonus = 0) {
-        const chance = this.calculateCaptureChance(creature, sphereId, achievementBonus);
+    static attemptCapture(creature, runeId, achievementBonus = 0) {
+        const chance = this.calculateCaptureChance(creature, runeId, achievementBonus);
         const success = Helpers.chance(chance);
 
         // Número de "shakes" (1-3) para animação
@@ -66,7 +66,7 @@ class CaptureSystem {
             success,
             chance: Math.round(chance * 100),
             shakes,
-            sphereUsed: sphereId
+            runeUsed: runeId
         };
     }
 }

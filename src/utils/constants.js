@@ -12,7 +12,7 @@ const CONST = {
     ENCOUNTER_CHANCE: 0.12, // 12% por tile de grama
     
     // Capture
-    SPHERE_RATES: {
+    rune_RATES: {
         common: 1.0,
         advanced: 1.5,
         rare: 2.5

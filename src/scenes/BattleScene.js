@@ -183,37 +183,37 @@ class BattleScene extends Phaser.Scene {
             return;
         }
 
-        // Procura esfera no inventário
-        const sphereTypes = ['sphere_rare', 'sphere_advanced', 'sphere_common'];
-        let sphereId = null;
-        for (const s of sphereTypes) {
-            if (this.playerData.hasItem(s)) {
-                sphereId = s;
+        // Procura runa no inventário
+        const runeTypes = ['rune_rare', 'rune_advanced', 'rune_common'];
+        let runeId = null;
+        for (const r of runeTypes) {
+            if (this.playerData.hasItem(r)) {
+                runeId = r;
                 break;
             }
         }
 
         // Use a mais fraca primeiro
-        const sphereOrder = ['sphere_common', 'sphere_advanced', 'sphere_rare'];
-        sphereId = null;
-        for (const s of sphereOrder) {
-            if (this.playerData.hasItem(s)) {
-                sphereId = s;
+        const runeOrder = ['rune_common', 'rune_advanced', 'rune_rare'];
+        runeId = null;
+        for (const r of runeOrder) {
+            if (this.playerData.hasItem(r)) {
+                runeId = r;
                 break;
             }
         }
 
-        if (!sphereId) {
-            this.battleUI.setLogText('Sem esferas de captura!');
+        if (!runeId) {
+            this.battleUI.setLogText('Sem runas de captura!');
             this.time.delayedCall(1000, () => this.showMainMenu());
             return;
         }
 
         this.processingTurn = true;
-        this.playerData.useItem(sphereId);
+        this.playerData.useItem(runeId);
 
         const captureResult = CaptureSystem.attemptCapture(
-            this.enemyCreature, sphereId, this.achievementBonuses.captureRate || 0
+            this.enemyCreature, runeId, this.achievementBonuses.captureRate || 0
         );
 
         // Animação de captura
@@ -242,13 +242,13 @@ class BattleScene extends Phaser.Scene {
         const enemySprite = this.battleUI.elements.enemySprite;
         if (!enemySprite) { callback(); return; }
 
-        const sphere = this.add.circle(CONST.GAME_WIDTH / 2, CONST.GAME_HEIGHT / 2, 12,
-            ItemsDB[result.sphereUsed]?.color || 0xffffff);
-        sphere.setStrokeStyle(2, 0x000000);
+        const rune = this.add.circle(CONST.GAME_WIDTH / 2, CONST.GAME_HEIGHT / 2, 12,
+            ItemsDB[result.runeUsed]?.color || 0xffffff);
+        rune.setStrokeStyle(2, 0x000000);
 
         // Throw animation
         this.tweens.add({
-            targets: sphere,
+            targets: rune,
             x: enemySprite.x,
             y: enemySprite.y,
             duration: 500,
@@ -258,14 +258,14 @@ class BattleScene extends Phaser.Scene {
                 let shakeCount = 0;
                 const doShake = () => {
                     if (shakeCount >= result.shakes) {
-                        sphere.destroy();
+                        rune.destroy();
                         callback();
                         return;
                     }
                     shakeCount++;
                     this.tweens.add({
-                        targets: sphere,
-                        x: sphere.x + 10,
+                        targets: rune,
+                        x: rune.x + 10,
                         duration: 150,
                         yoyo: true,
                         repeat: 1,
@@ -325,7 +325,7 @@ class BattleScene extends Phaser.Scene {
         const item = ItemsDB[itemId];
         if (!item) return;
 
-        if (item.type === 'sphere') {
+        if (item.type === 'rune') {
             this.handleCapture();
             return;
         }

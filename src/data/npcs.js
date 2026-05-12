@@ -42,7 +42,7 @@ const NPCsDB = {
         color: 0x2ecc71,
         dialog: [
             'Bem-vindo à minha loja!',
-            'Temos esferas, poções e mais!',
+            'Temos runas, poções e mais!',
             'Volte sempre!'
         ],
         type: 'shop',
