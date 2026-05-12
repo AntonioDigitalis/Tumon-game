@@ -24,6 +24,20 @@ class WorldScene extends Phaser.Scene {
         this.inputLocked = false;
     }
 
+    preload() {
+        Log.info("Iniciando preload...");
+
+        ItemAssetLoader.loadAll(this);
+
+        this.load.on('complete', () => {
+            Log.ok("Preload concluído com sucesso!");
+        });
+
+        this.load.on('loaderror', (file) => {
+            Log.error(`Erro ao carregar asset: ${file.key}`);
+        });
+    }
+
     create() {
         // FIX: captura as dimensões reais do canvas ANTES de aplicar zoom.
         // this.scale.width/height retorna o tamanho do elemento canvas no DOM,
@@ -677,39 +691,67 @@ const container = this.add.container(CONST.GAME_WIDTH / 2, CONST.GAME_HEIGHT / 2
         }).setOrigin(0.5);
         container.add(title);
 
+        const tooltip = this.add.text(0, 0, '', {
+            fontFamily: 'Courier New',
+            fontSize: '10px',
+            color: '#ffffff',
+            backgroundColor: '#000000',
+            padding: { x: 6, y: 4 }
+        }).setVisible(false).setDepth(9999);
+
         items.slice(0, 8).forEach((itemId, i) => {
             const item = ItemsDB[itemId];
             if (!item) return;
 
-            const by = -110 + i * 34;
+            const y = -110 + i * 34;
 
-            const btnBg = this.add.rectangle(0, by, 340, 28, 0x2c3e50);
-            btnBg.setStrokeStyle(1, 0x555555);
-            btnBg.setInteractive({ useHandCursor: true });
+            // fundo
+            const btnBg = this.add.rectangle(0, y, 340, 28, 0x2c3e50)
+                .setStrokeStyle(1, 0x555555)
+                .setInteractive({ useHandCursor: true });
 
-            const btnText = this.add.text(-155, by - 8, item.name, {
-                fontFamily: 'Courier New', fontSize: '11px', color: '#ecf0f1'
-            });
-            const priceText = this.add.text(100, by - 8, `${item.price} 💰`, {
-                fontFamily: 'Courier New', fontSize: '11px', color: '#f1c40f'
-            });
-            const descText = this.add.text(-155, by + 5, item.description, {
-                fontFamily: 'Courier New', fontSize: '9px', color: '#888888'
+            // ícone (fixo à esquerda)
+            const icon = this.add.image(-150, y, item.icon)
+                .setDisplaySize(22, 22);
+
+            // nome (alinhado ao lado do ícone)
+            const btnText = this.add.text(-120, y - 8, item.name, {
+                fontFamily: 'Courier New',
+                fontSize: '11px',
+                color: '#ecf0f1'
             });
 
-            btnBg.on('pointerover', () => btnBg.setFillStyle(0x34495e));
-            btnBg.on('pointerout', () => btnBg.setFillStyle(0x2c3e50));
+            // preço (lado direito fixo)
+            const priceText = this.add.text(120, y - 8, `${item.price} 💰`, {
+                fontFamily: 'Courier New',
+                fontSize: '11px',
+                color: '#f1c40f'
+            }).setOrigin(1, 0);
+
+
+            btnBg.on('pointerover', (pointer) => {
+                btnBg.setFillStyle(0x34495e);
+
+                tooltip.setText(item.description);
+                tooltip.setPosition(pointer.x + 10, pointer.y + 10);
+                tooltip.setVisible(true);
+            });
+
+            btnBg.on('pointerout', () => {
+                btnBg.setFillStyle(0x2c3e50);
+                tooltip.setVisible(false);
+            });
+
             btnBg.on('pointerdown', () => {
                 if (this.playerData.spendGold(item.price)) {
                     this.playerData.addItem(itemId);
                     this.hud.showNotification(`✅ Comprou ${item.name}!`, '#2ecc71');
-                    title.setText(`🛒 LOJA  |  💰 ${this.playerData.gold} ouro`);
                 } else {
                     this.hud.showNotification('💸 Ouro insuficiente!', '#e74c3c');
                 }
             });
 
-            container.add([btnBg, btnText, priceText, descText]);
+            container.add([btnBg, icon, btnText, priceText]);
         });
 
         const closeBtn = this.add.text(0, 148, '[ Fechar ]', {

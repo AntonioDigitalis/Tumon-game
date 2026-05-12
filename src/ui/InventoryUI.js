@@ -24,7 +24,7 @@ class InventoryUI {
             const item = ItemsDB[itemId];
             const iy = i * 40;
 
-            const bg = scene.add.rectangle(150, iy + 15, 300, 35, 0x1a1a2e, 0.8);
+            const bg = scene.add.rectangle(160, iy + 15, 320, 35, 0x1a1a2e, 0.8);
             bg.setStrokeStyle(1, 0x444444);
 
             if (onSelect) {
@@ -34,19 +34,21 @@ class InventoryUI {
                 bg.on('pointerout', () => bg.setStrokeStyle(1, 0x444444));
             }
 
-            const nameText = scene.add.text(15, iy + 7, `${item.name} x${qty}`, {
+            const icon = scene.add.image(20, iy + 17, item.icon).setDisplaySize(24, 24);
+
+            const nameText = scene.add.text(45, iy + 7, `${item.name} x${qty}`, {
                 fontFamily: 'Courier New',
                 fontSize: '12px',
                 color: '#ffffff'
             });
 
-            const descText = scene.add.text(15, iy + 22, item.description, {
+            const descText = scene.add.text(45, iy + 22, item.description, {
                 fontFamily: 'Courier New',
                 fontSize: '9px',
                 color: '#888888'
             });
 
-            container.add([bg, nameText, descText]);
+            container.add([bg, icon, nameText, descText]);
         });
 
         return container;
