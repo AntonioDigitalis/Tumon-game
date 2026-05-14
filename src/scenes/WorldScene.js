@@ -250,9 +250,19 @@ class WorldScene extends Phaser.Scene {
 
     update(time, delta) {
         if (this.dialog.isVisible) {
-            if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
-                Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
-                Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey('ENTER'))) {
+            if (this.dialog.choiceActive) {
+                if (Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.wasd.up)) {
+                    this.dialog.navigateChoice(-1);
+                } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down) || Phaser.Input.Keyboard.JustDown(this.wasd.down)) {
+                    this.dialog.navigateChoice(1);
+                } else if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
+                           Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
+                           Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey('ENTER'))) {
+                    this.dialog.confirmChoice();
+                }
+            } else if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
+                       Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
+                       Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey('ENTER'))) {
                 this.dialog.advance();
             }
             return;
@@ -477,16 +487,45 @@ class WorldScene extends Phaser.Scene {
     }
 
     handleBankNPC(npcData) {
+        const gold = this.playerData.gold;
+        const balance = this.playerData.bankGold;
         this.dialog.show([
-            `${npcData.name}: Olá querido!`,
-            `Seu ouro: ${this.playerData.gold} | No banco: ${this.playerData.bankGold}`,
-            'Vou guardar 100 de ouro para você, ok?'
+            `${npcData.name}: Olá querido! Ouro em mãos: ${gold} | Guardado comigo: ${balance}.`
         ], () => {
-            if (this.playerData.depositGold(100)) {
-                this.hud.showNotification('💰 100 ouro depositado!', '#f1c40f');
-            } else {
-                this.hud.showNotification('Ouro insuficiente!', '#e74c3c');
-            }
+            this.dialog.showChoice('O que deseja fazer?', ['Depositar', 'Sacar', 'Sair'], (choice) => {
+                if (choice === 0) this._bankDeposit();
+                else if (choice === 1) this._bankWithdraw();
+            });
+        });
+    }
+
+    _bankDeposit() {
+        const gold = this.playerData.gold;
+        if (gold <= 0) {
+            this.dialog.show(['Você não tem ouro para depositar!']);
+            return;
+        }
+        this.dialog.showChoice(`Depositar quanto? (${gold} disponível)`, ['Tudo', 'Metade', 'Cancelar'], (choice) => {
+            if (choice === 2) return;
+            const amount = choice === 0 ? gold : Math.floor(gold / 2);
+            if (amount <= 0) { this.dialog.show(['Ouro insuficiente!']); return; }
+            this.playerData.depositGold(amount);
+            this.hud.showNotification(`+${amount} ouro guardado!`, '#f1c40f');
+            this.hud.update(this.playerData, this.currentMap.name);
+        });
+    }
+
+    _bankWithdraw() {
+        const balance = this.playerData.bankGold;
+        if (balance <= 0) {
+            this.dialog.show(['Não há ouro guardado!']);
+            return;
+        }
+        this.dialog.showChoice(`Sacar quanto? (${balance} guardado)`, ['Tudo', 'Metade', 'Cancelar'], (choice) => {
+            if (choice === 2) return;
+            const amount = choice === 0 ? balance : Math.floor(balance / 2);
+            this.playerData.withdrawGold(amount);
+            this.hud.showNotification(`${amount} ouro sacado!`, '#2ecc71');
             this.hud.update(this.playerData, this.currentMap.name);
         });
     }
@@ -569,6 +608,11 @@ class WorldScene extends Phaser.Scene {
 
         if (result.won) {
             this.playerData.stats.battlesWon++;
+            if (this.playerData.bankGold > 0) {
+                const interest = Math.max(1, Math.floor(this.playerData.bankGold * 0.01));
+                this.playerData.bankGold += interest;
+                this.hud.showNotification(`+${interest} ouro guardado com a mãe!`, '#f1c40f');
+            }
             if (result.gold) this.playerData.addGold(result.gold);
             if (result.xp) {
                 const first = this.playerData.getFirstAlive();
@@ -609,6 +653,11 @@ class WorldScene extends Phaser.Scene {
 
         if (result.won) {
             this.playerData.stats.battlesWon++;
+            if (this.playerData.bankGold > 0) {
+                const interest = Math.max(1, Math.floor(this.playerData.bankGold * 0.01));
+                this.playerData.bankGold += interest;
+                this.hud.showNotification(`+${interest} ouro guardado com a mãe!`, '#f1c40f');
+            }
             this.playerData.defeatedTrainers.push(npcData.id);
             this.playerData.addGold(npcData.reward);
 
@@ -647,6 +696,11 @@ class WorldScene extends Phaser.Scene {
 
         if (result.won) {
             this.playerData.stats.battlesWon++;
+            if (this.playerData.bankGold > 0) {
+                const interest = Math.max(1, Math.floor(this.playerData.bankGold * 0.01));
+                this.playerData.bankGold += interest;
+                this.hud.showNotification(`+${interest} ouro guardado com a mãe!`, '#f1c40f');
+            }
             this.playerData.defeatedLeaders.push(leader.id);
             this.playerData.badges.push(leader.badge);
             this.playerData.addGold(leader.reward);
