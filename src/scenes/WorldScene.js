@@ -255,13 +255,11 @@ class WorldScene extends Phaser.Scene {
                     this.dialog.navigateChoice(-1);
                 } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down) || Phaser.Input.Keyboard.JustDown(this.wasd.down)) {
                     this.dialog.navigateChoice(1);
-                } else if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
-                           Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
+                } else if (Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
                            Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey('ENTER'))) {
                     this.dialog.confirmChoice();
                 }
-            } else if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
-                       Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
+            } else if (Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
                        Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey('ENTER'))) {
                 this.dialog.advance();
             }
@@ -441,7 +439,11 @@ class WorldScene extends Phaser.Scene {
 
     handleInteract() {
         if (this.dialog.isVisible) {
-            this.dialog.advance();
+            if (this.dialog.choiceActive) {
+                this.dialog.confirmChoice();
+            } else {
+                this.dialog.advance();
+            }
             return;
         }
 
@@ -726,16 +728,27 @@ class WorldScene extends Phaser.Scene {
     }
 
     openShop() {
+        if (this.dialog.isVisible) return;
         const items = ShopInventory[this.currentMap.id] || ShopInventory.town || [];
-        this.showShopMenu(items);
+        this.inputLocked = true;
+        this.scene.launch('ShopScene', {
+            playerData: this.playerData,
+            items,
+            onClose: () => {
+                this.scene.resume();
+                this.inputLocked = false;
+                this.hud.update(this.playerData, this.currentMap.name);
+                this.saveGame();
+            }
+        });
+        this.scene.pause();
     }
 
-    showShopMenu(items) {
+    _shopMenuLegacy(items) {
         const W = this.scale.width;
         const H = this.scale.height;
 
-// Linha atual:
-const container = this.add.container(CONST.GAME_WIDTH / 2, CONST.GAME_HEIGHT / 2).setDepth(1100).setScrollFactor(0);
+        const container = this.add.container(CONST.GAME_WIDTH / 2, CONST.GAME_HEIGHT / 2).setDepth(1100).setScrollFactor(0);
 
         const bg = this.add.rectangle(0, 0, 380, 340, 0x000000, 0.92);
         bg.setStrokeStyle(2, 0xf1c40f);
