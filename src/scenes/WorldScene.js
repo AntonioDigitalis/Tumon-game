@@ -189,7 +189,8 @@ class WorldScene extends Phaser.Scene {
         healer_npc:    'npc_healer',
         shop_npc:      'npc_merchant',
         trainer_npc_1: 'npc_trainer',
-        trainer_npc_2: 'npc_trainer'
+        trainer_npc_2: 'npc_trainer',
+        guide_npc:     'npc_guide'
     };
 
     mapNpcs.forEach(npcId => {

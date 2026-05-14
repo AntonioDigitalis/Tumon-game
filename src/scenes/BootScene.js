@@ -113,6 +113,13 @@ this.load.image('normousse_shiny', 'assets/sprites/normousse_shiny.png');
 
         // Player
         this.createPlayerTexture('player', ts, ts * 1.2);
+
+        // NPCs
+        this.createNPCTexture('npc_mom',      ts, ts * 1.2, 0xff69b4);
+        this.createNPCTexture('npc_healer',   ts, ts * 1.2, 0xff6b9d);
+        this.createNPCTexture('npc_merchant', ts, ts * 1.2, 0x2ecc71);
+        this.createNPCTexture('npc_trainer',  ts, ts * 1.2, 0xe74c3c);
+        this.createNPCTexture('npc_guide',    ts, ts * 1.2, 0x95a5a6);
     }
 
     createColorTexture(key, w, h, color) {
@@ -286,4 +293,62 @@ this.load.image('normousse_shiny', 'assets/sprites/normousse_shiny.png');
 
         canvas.refresh();
     }
-}   
+
+    createNPCTexture(key, w, h, color) {
+        const canvas = this.textures.createCanvas(key, w, h);
+        const ctx = canvas.getContext();
+        ctx.imageSmoothingEnabled = false;
+
+        const p = (x, y, pw, ph, c) => {
+            ctx.fillStyle = c;
+            ctx.fillRect(Math.round(x), Math.round(y), pw, ph);
+        };
+
+        const colorHex = '#' + color.toString(16).padStart(6, '0');
+
+        // Sombra
+        ctx.fillStyle = 'rgba(0,0,0,0.18)';
+        ctx.beginPath();
+        ctx.ellipse(w / 2, h - 3, w * 0.28, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pernas
+        p(w*0.30, h*0.72, w*0.16, h*0.20, '#4a4a6b');
+        p(w*0.54, h*0.72, w*0.16, h*0.20, '#4a4a6b');
+
+        // Sapatos
+        p(w*0.28, h*0.88, w*0.20, h*0.06, '#2d1f10');
+        p(w*0.52, h*0.88, w*0.20, h*0.06, '#2d1f10');
+
+        // Corpo (cor do NPC)
+        p(w*0.22, h*0.42, w*0.56, h*0.32, colorHex);
+
+        // Braços
+        p(w*0.08, h*0.44, w*0.14, h*0.24, '#e8b89a');
+        p(w*0.78, h*0.44, w*0.14, h*0.24, '#e8b89a');
+
+        // Pescoço
+        p(w*0.40, h*0.36, w*0.20, h*0.08, '#e8b89a');
+
+        // Cabeça
+        p(w*0.26, h*0.14, w*0.48, h*0.24, '#e8b89a');
+
+        // Olhos
+        p(w*0.34, h*0.20, w*0.10, h*0.07, '#1a1a2e');
+        p(w*0.56, h*0.20, w*0.10, h*0.07, '#1a1a2e');
+
+        // Boca
+        p(w*0.42, h*0.30, w*0.16, h*0.03, '#c07850');
+
+        // Cabelo
+        p(w*0.24, h*0.02, w*0.52, h*0.14, '#4a2810');
+
+        // Contorno
+        ctx.strokeStyle = '#1a1a2e';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(Math.round(w*0.26), Math.round(h*0.14), Math.round(w*0.48), Math.round(h*0.24));
+        ctx.strokeRect(Math.round(w*0.22), Math.round(h*0.42), Math.round(w*0.56), Math.round(h*0.32));
+
+        canvas.refresh();
+    }
+}
