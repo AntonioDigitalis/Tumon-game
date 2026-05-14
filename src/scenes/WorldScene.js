@@ -185,12 +185,14 @@ class WorldScene extends Phaser.Scene {
 
     // Mapa de textura por npcId
     const npcTextureMap = {
-        mom_npc:       'npc_mom',
-        healer_npc:    'npc_healer',
-        shop_npc:      'npc_merchant',
-        trainer_npc_1: 'npc_trainer',
-        trainer_npc_2: 'npc_trainer',
-        guide_npc:     'npc_guide'
+        mom_npc:          'npc_mom',
+        healer_npc:       'npc_healer',
+        shop_npc:         'npc_merchant',
+        trainer_npc_1:    'npc_trainer',
+        trainer_npc_2:    'npc_trainer',
+        guide_npc:        'npc_guide',
+        leader_fire_npc:  'npc_trainer',
+        leader_ice_npc:   'npc_trainer'
     };
 
     mapNpcs.forEach(npcId => {

@@ -106,5 +106,35 @@ const NPCsDB = {
         reward: 300,
         defeated: false,
         direction: 'down'
+    },
+    leader_fire_npc: {
+        id: 'leader_fire_npc',
+        name: 'Ignis',
+        mapId: 'route3',
+        x: 11,
+        y: 20,
+        color: 0xe74c3c,
+        dialog: [
+            'Aqui fica o Templo do Fogo.',
+            'Somente os mais fortes entram.',
+            'Entre pela porta se tiver coragem!'
+        ],
+        type: 'info',
+        direction: 'down'
+    },
+    leader_ice_npc: {
+        id: 'leader_ice_npc',
+        name: 'Glacius',
+        mapId: 'route3',
+        x: 13,
+        y: 20,
+        color: 0x3498db,
+        dialog: [
+            'Aqui fica o Templo do Gelo.',
+            'O frio aqui congela a alma.',
+            'Entre pela porta... se sobreviver.'
+        ],
+        type: 'info',
+        direction: 'down'
     }
 };

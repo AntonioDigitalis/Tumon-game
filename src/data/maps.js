@@ -96,8 +96,8 @@ const MapsDB = {
         ],
         transitions: [
             { x: 12, y: 0, target: 'town', targetSpawn: { x: 12, y: 17 }, type: 'map' },
-            { x: 12, y: 29, target: 'route2', targetSpawn: { x: 12, y: 1 }, type: 'map' },
-            { x: 18, y: 29, target: 'cave', targetSpawn: { x: 5, y: 1 }, type: 'map' }
+            { x: 12, y: 28, target: 'route2', targetSpawn: { x: 12, y: 1 }, type: 'map' },
+            { x: 18, y: 28, target: 'cave', targetSpawn: { x: 5, y: 1 }, type: 'map' }
         ],
         npcs: ['trainer_npc_1']
     },
@@ -138,8 +138,8 @@ const MapsDB = {
             1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
         ],
         transitions: [
-            { x: 12, y: 0, target: 'route1', targetSpawn: { x: 12, y: 28 }, type: 'map' },
-            { x: 12, y: 24, target: 'route3', targetSpawn: { x: 12, y: 1 }, type: 'map' }
+            { x: 12, y: 0, target: 'route1', targetSpawn: { x: 12, y: 27 }, type: 'map' },
+            { x: 12, y: 23, target: 'route3', targetSpawn: { x: 12, y: 1 }, type: 'map' }
         ],
         npcs: ['trainer_npc_2']
     },
