@@ -56,7 +56,7 @@ Cada criatura tem:
 - IA inimiga prioriza ataques super efetivos e cura quando HP baixo
 
 ### Captura
-- Usa esferas (Comum, Avançada, Rara)
+- Usa runas (Comum, Avançada, Rara)
 - Chance aumenta com HP baixo, status aplicado e achievements desbloqueados
 
 ### Evolução & XP
