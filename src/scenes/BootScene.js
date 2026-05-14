@@ -20,7 +20,51 @@ class BootScene extends Phaser.Scene {
 
         const barBg = this.add.rectangle(w / 2, h / 2 + 10, 300, 20, 0x333333);
         const bar = this.add.rectangle(w / 2 - 150, h / 2 + 10, 0, 20, 0x3498db).setOrigin(0, 0.5);
+// Sprites das criaturas
+this.load.image('embrill', 'assets/sprites/embrill.png');
+this.load.image('embrill_shiny', 'assets/sprites/embrill_shiny.png');
 
+this.load.image('pyrothorn', 'assets/sprites/pyrothorn.png');
+this.load.image('pyrothorn_shiny', 'assets/sprites/pyrothorn_shiny.png');
+
+this.load.image('aquafen', 'assets/sprites/aquafen.png');
+this.load.image('aquafen_shiny', 'assets/sprites/aquafen_shiny.png');
+
+this.load.image('tidalix', 'assets/sprites/tidalix.png');
+this.load.image('tidalix_shiny', 'assets/sprites/tidalix_shiny.png');
+
+this.load.image('thornvine', 'assets/sprites/thornvine.png');
+this.load.image('thornvine_shiny', 'assets/sprites/thornvine_shiny.png');
+
+this.load.image('floravex', 'assets/sprites/floravex.png');
+this.load.image('floravex_shiny', 'assets/sprites/floravex_shiny.png');
+
+this.load.image('zapplet', 'assets/sprites/zapplet.png');
+this.load.image('zapplet_shiny', 'assets/sprites/zapplet_shiny.png');
+
+this.load.image('voltarex', 'assets/sprites/voltarex.png');
+this.load.image('voltarex_shiny', 'assets/sprites/voltarex_shiny.png');
+
+this.load.image('dunebite', 'assets/sprites/dunebite.png');
+this.load.image('dunebite_shiny', 'assets/sprites/dunebite_shiny.png');
+
+this.load.image('glacifawn', 'assets/sprites/glacifawn.png');
+this.load.image('glacifawn_shiny', 'assets/sprites/glacifawn_shiny.png');
+
+this.load.image('frostclaw', 'assets/sprites/frostclaw.png');
+this.load.image('frostclaw_shiny', 'assets/sprites/frostclaw_shiny.png');
+
+this.load.image('psychowl', 'assets/sprites/psychowl.png');
+this.load.image('psychowl_shiny', 'assets/sprites/psychowl_shiny.png');
+
+this.load.image('shadewisp', 'assets/sprites/shadewisp.png');
+this.load.image('shadewisp_shiny', 'assets/sprites/shadewisp_shiny.png');
+
+this.load.image('umbravox', 'assets/sprites/umbravox.png');
+this.load.image('umbravox_shiny', 'assets/sprites/umbravox_shiny.png');
+
+this.load.image('normousse', 'assets/sprites/normousse.png');
+this.load.image('normousse_shiny', 'assets/sprites/normousse_shiny.png');
         this.load.on('progress', (value) => {
             bar.width = 300 * value;
         });

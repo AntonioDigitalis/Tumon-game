@@ -11,9 +11,11 @@ const CreaturesDB = {
         evolution: { to: 'pyrothorn', level: 16 },
         lore: 'Pequena lagartixa de brasa. Nasce em vulcões adormecidos.',
         shinyChance: 0.02,
-        spriteColor: 0xe74c3c,
-        spriteShinyColor: 0xf39c12
-    },
+    	spriteColor: 0xe74c3c,
+	    spriteShinyColor: 0xf39c12,
+    	spriteKey: 'embrill',
+    	spriteShinyKey: 'embrill_shiny'
+    	},
     pyrothorn: {
         id: 'pyrothorn',
         name: 'Pyrothorn',
@@ -27,7 +29,9 @@ const CreaturesDB = {
         lore: 'Espinhos incandescentes cobrem seu corpo imponente.',
         shinyChance: 0.01,
         spriteColor: 0xc0392b,
-        spriteShinyColor: 0xe67e22
+        spriteShinyColor: 0xe67e22,
+	    spriteKey: 'pyrothorn',
+	    spriteShinyKey: 'pyrothorn_shiny'
     },
     aquafen: {
         id: 'aquafen',
@@ -42,7 +46,9 @@ const CreaturesDB = {
         lore: 'Sapo cristalino. Canta nas noites de lua cheia.',
         shinyChance: 0.02,
         spriteColor: 0x3498db,
-        spriteShinyColor: 0x1abc9c
+        spriteShinyColor: 0x1abc9c,
+	    spriteKey: 'aquafen',
+	    spriteShinyKey: 'aquafen_shiny'
     },
     tidalix: {
         id: 'tidalix',
@@ -57,7 +63,9 @@ const CreaturesDB = {
         lore: 'Serpente aquática anciã. Controla marés com seu canto.',
         shinyChance: 0.01,
         spriteColor: 0x2980b9,
-        spriteShinyColor: 0x16a085
+        spriteShinyColor: 0x16a085,
+    	spriteKey: 'tidalix',
+    	spriteShinyKey: 'tidalix_shiny'
     },
     thornvine: {
         id: 'thornvine',
@@ -72,7 +80,9 @@ const CreaturesDB = {
         lore: 'Planta ambulante cujas raízes buscam luz eternamente.',
         shinyChance: 0.02,
         spriteColor: 0x27ae60,
-        spriteShinyColor: 0xf1c40f
+        spriteShinyColor: 0xf1c40f,
+    	spriteKey: 'thornvine',
+    	spriteShinyKey: 'thornvine_shiny'
     },
     floravex: {
         id: 'floravex',
@@ -87,7 +97,9 @@ const CreaturesDB = {
         lore: 'Árvore sentinela. Protege florestas ancestrais.',
         shinyChance: 0.01,
         spriteColor: 0x1e8449,
-        spriteShinyColor: 0xd4ac0d
+        spriteShinyColor: 0xd4ac0d,
+        spriteKey: 'floravex',
+        spriteShinyKey: 'floravex_shiny'
     },
     zapplet: {
         id: 'zapplet',
@@ -102,7 +114,9 @@ const CreaturesDB = {
         lore: 'Esfera elétrica flutuante. Adora tempestades.',
         shinyChance: 0.02,
         spriteColor: 0xf1c40f,
-        spriteShinyColor: 0x8e44ad
+        spriteShinyColor: 0x8e44ad,
+	    spriteKey: 'zapplet',
+	    spriteShinyKey: 'zapplet_shiny'
     },
     voltarex: {
         id: 'voltarex',
@@ -117,7 +131,9 @@ const CreaturesDB = {
         lore: 'Raposa trovão. Sua cauda gera relâmpagos em cadeia.',
         shinyChance: 0.01,
         spriteColor: 0xd4ac0d,
-        spriteShinyColor: 0x9b59b6
+        spriteShinyColor: 0x9b59b6,
+        spriteKey: 'voltarex',
+        spriteShinyKey: 'voltarex_shiny'
     },
     dunebite: {
         id: 'dunebite',
@@ -132,7 +148,9 @@ const CreaturesDB = {
         lore: 'Escorpião de areia. Enterra-se e espera presas pacientemente.',
         shinyChance: 0.02,
         spriteColor: 0xa0522d,
-        spriteShinyColor: 0xc0392b
+        spriteShinyColor: 0xc0392b,
+        spriteKey: 'dunebite',
+        spriteShinyKey: 'dunebite_shiny'
     },
     glacifawn: {
         id: 'glacifawn',
@@ -147,7 +165,9 @@ const CreaturesDB = {
         lore: 'Cervo de gelo. Congela o chão por onde caminha.',
         shinyChance: 0.03,
         spriteColor: 0x87ceeb,
-        spriteShinyColor: 0xecf0f1
+        spriteShinyColor: 0xecf0f1,
+        spriteKey: 'glacifawn',
+        spriteShinyKey: 'glacifawn_shiny'
     },
     frostclaw: {
         id: 'frostclaw',
@@ -162,7 +182,9 @@ const CreaturesDB = {
         lore: 'Urso glacial. Seus golpes congelam instantaneamente.',
         shinyChance: 0.01,
         spriteColor: 0x5dade2,
-        spriteShinyColor: 0xfdfefe
+        spriteShinyColor: 0xfdfefe,
+        spriteKey: 'frostclaw',
+        spriteShinyKey: 'frostclaw_shiny'
     },
     psychowl: {
         id: 'psychowl',
@@ -177,7 +199,9 @@ const CreaturesDB = {
         lore: 'Coruja de olhos violeta. Lê pensamentos com facilidade.',
         shinyChance: 0.03,
         spriteColor: 0x9b59b6,
-        spriteShinyColor: 0xe74c3c
+        spriteShinyColor: 0xe74c3c,
+        spriteKey: 'psychowl',
+        spriteShinyKey: 'psychowl_shiny'
     },
     shadewisp: {
         id: 'shadewisp',
@@ -192,7 +216,9 @@ const CreaturesDB = {
         lore: 'Fumaça viva. Habita sombras e becos escuros.',
         shinyChance: 0.03,
         spriteColor: 0x5d6d7e,
-        spriteShinyColor: 0xe74c3c
+        spriteShinyColor: 0xe74c3c,
+        spriteKey: 'shadewisp',
+        spriteShinyKey: 'shadewisp_shiny'
     },
     umbravox: {
         id: 'umbravox',
@@ -207,7 +233,9 @@ const CreaturesDB = {
         lore: 'Lobo das trevas. Uiva para drenar energia vital dos inimigos.',
         shinyChance: 0.01,
         spriteColor: 0x2c3e50,
-        spriteShinyColor: 0xc0392b
+        spriteShinyColor: 0xc0392b,
+        spriteKey: 'umbravox',
+        spriteShinyKey: 'umbravox_shiny'
     },
     normousse: {
         id: 'normousse',
@@ -222,7 +250,9 @@ const CreaturesDB = {
         lore: 'Ratinho gordinho. Incrivelmente amigável e resiliente.',
         shinyChance: 0.04,
         spriteColor: 0xbdc3c7,
-        spriteShinyColor: 0xf1c40f
+        spriteShinyColor: 0xf1c40f,
+        spriteKey: 'normousse',
+        spriteShinyKey: 'normousse_shiny'
     }
 };
 

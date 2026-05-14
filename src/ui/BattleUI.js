@@ -52,6 +52,7 @@ class BattleUI {
         const panelH = 80;
         const bg = this.scene.add.rectangle(panelW / 2, panelH / 2, panelW, panelH, 0x000000, 0.78);
         bg.setStrokeStyle(1, 0x888888);
+        panel.setDepth(3);
 
         // Nome + nível
         const shinyIcon = creature.isShiny ? '✨ ' : '';
@@ -106,18 +107,12 @@ class BattleUI {
     }
 
     createCreatureSprite(key, creature, x, y) {
-        const size = key === 'player' ? 64 : 56;
-        const sprite = this.scene.add.rectangle(x, y, size, size, creature.spriteColor);
-        sprite.setStrokeStyle(2, 0xffffff);
+       const size = key === 'player' ? 96 : 80;
+        const sprite = this.scene.add.image(x, y, creature.spriteKey);
 
-        // Olhos
-        const eyeSize = size / 8;
-        const eyeY = y - size / 6;
-        this.scene.add.circle(x - size / 5, eyeY, eyeSize, 0xffffff);
-        this.scene.add.circle(x + size / 5, eyeY, eyeSize, 0xffffff);
-        this.scene.add.circle(x - size / 5 + 1, eyeY, eyeSize / 2, 0x000000);
-        this.scene.add.circle(x + size / 5 + 1, eyeY, eyeSize / 2, 0x000000);
-
+       sprite.setScale(0.3);
+      sprite.setDepth(2);
+        
         // Ícone do elemento
         const elementSymbols = {
             fire: '🔥', water: '💧', plant: '🌿', electric: '⚡',
@@ -162,11 +157,12 @@ class BattleUI {
         //   posição: centralizado horizontalmente, acima do log (H - 54 - 160/2)
         const menuW = 480;
         const menuH = 160;
-        const menuX = W / 2;
+        const menuX = W - 280;
         const menuY = H - 54 - menuH / 2 - 8; // acima do log
 
         const menu = this.scene.add.container(menuX, menuY);
-        const bg = this.scene.add.rectangle(0, 0, menuW, menuH, 0x1a1a2e, 0.96);
+        menu.setDepth(999);
+	const bg = this.scene.add.rectangle(0, 0, menuW, menuH, 0x1a1a2e, 0.96);
         bg.setStrokeStyle(2, 0x3498db);
         menu.add(bg);
 
@@ -174,7 +170,8 @@ class BattleUI {
         this.elements.actionMenuW = menuW;
         this.elements.actionMenuH = menuH;
         this.elements.actionButtons = [];
-    }
+  }
+
 
     // -------------------------------------------------------
     // Layouts de botões — todos calculados dentro do container
@@ -366,9 +363,11 @@ class BattleUI {
         const sprite = this.elements[`${key}Sprite`];
         if (!sprite) return;
 
-        const origColor = sprite.fillColor;
-        sprite.setFillStyle(color);
-        this.scene.time.delayedCall(140, () => sprite.setFillStyle(origColor));
+        sprite.setTint(color);
+
+        this.scene.time.delayedCall(140, () => {
+            sprite.clearTint();
+        });
     }
 
     // -------------------------------------------------------
