@@ -619,18 +619,22 @@ class WorldScene extends Phaser.Scene {
             }
             if (result.gold) this.playerData.addGold(result.gold);
             if (result.xp) {
-                const first = this.playerData.getFirstAlive();
-                if (first) {
-                    const levelResults = EvolutionSystem.addXP(first, result.xp);
-                    levelResults.forEach(r => {
-                        if (r.levelUp) this.hud.showNotification(`⬆ ${first.name} subiu para Lv.${r.newLevel}!`, '#f1c40f');
+                const uids     = result.participants || [];
+                const eligible = uids.length > 0
+                    ? this.playerData.party.filter(c => uids.includes(c.uid))
+                    : [this.playerData.getFirstAlive()].filter(Boolean);
+                const xpEach   = eligible.length > 0 ? Math.max(1, Math.floor(result.xp / eligible.length)) : 0;
+
+                eligible.forEach(c => {
+                    EvolutionSystem.addXP(c, xpEach).forEach(r => {
+                        if (r.levelUp) this.hud.showNotification(`⬆ ${c.name} subiu para Lv.${r.newLevel}!`, '#f1c40f');
                         if (r.evolved) {
                             this.playerData.stats.evolutions++;
-                            this.hud.showNotification(`✨ ${first.name} evoluiu para ${r.evolvedTo}!`, '#9b59b6');
+                            this.hud.showNotification(`✨ ${c.name} evoluiu para ${r.evolvedTo}!`, '#9b59b6');
                         }
-                        if (r.mutated) this.hud.showNotification(`🧬 ${first.name} sofreu uma mutação!`, '#e74c3c');
+                        if (r.mutated) this.hud.showNotification(`🧬 ${c.name} sofreu uma mutação!`, '#e74c3c');
                     });
-                }
+                });
             }
             if (result.captured) {
                 this.playerData.stats.captures++;
@@ -665,17 +669,20 @@ class WorldScene extends Phaser.Scene {
             this.playerData.defeatedTrainers.push(npcData.id);
             this.playerData.addGold(npcData.reward);
 
-            this.playerData.party.forEach(c => {
-                if (c.isAlive()) {
-                    const levelResults = EvolutionSystem.addXP(c, result.xp || 50);
-                    levelResults.forEach(r => {
-                        if (r.levelUp) this.hud.showNotification(`⬆ ${c.name} Lv.${r.newLevel}!`, '#f1c40f');
-                        if (r.evolved) {
-                            this.playerData.stats.evolutions++;
-                            this.hud.showNotification(`✨ Evolução!`, '#9b59b6');
-                        }
-                    });
-                }
+            const uids     = result.participants || [];
+            const eligible = uids.length > 0
+                ? this.playerData.party.filter(c => c.isAlive() && uids.includes(c.uid))
+                : this.playerData.party.filter(c => c.isAlive());
+            const xpEach   = eligible.length > 0 ? Math.max(1, Math.floor((result.xp || 50) / eligible.length)) : 0;
+
+            eligible.forEach(c => {
+                EvolutionSystem.addXP(c, xpEach).forEach(r => {
+                    if (r.levelUp) this.hud.showNotification(`⬆ ${c.name} Lv.${r.newLevel}!`, '#f1c40f');
+                    if (r.evolved) {
+                        this.playerData.stats.evolutions++;
+                        this.hud.showNotification(`✨ Evolução!`, '#9b59b6');
+                    }
+                });
             });
 
             this.hud.showNotification(`💰 +${npcData.reward} ouro!`, '#f1c40f');
@@ -709,9 +716,12 @@ class WorldScene extends Phaser.Scene {
             this.playerData.badges.push(leader.badge);
             this.playerData.addGold(leader.reward);
 
-            this.playerData.party.forEach(c => {
-                if (c.isAlive()) EvolutionSystem.addXP(c, 200);
-            });
+            const uids     = result.participants || [];
+            const eligible = uids.length > 0
+                ? this.playerData.party.filter(c => c.isAlive() && uids.includes(c.uid))
+                : this.playerData.party.filter(c => c.isAlive());
+            const xpEach   = eligible.length > 0 ? Math.max(1, Math.floor(200 / eligible.length)) : 0;
+            eligible.forEach(c => EvolutionSystem.addXP(c, xpEach));
 
             this.dialog.show(leader.dialog.after, () => {
                 this.hud.showNotification(`🏅 ${leader.badge} obtido!`, '#f1c40f');

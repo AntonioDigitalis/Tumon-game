@@ -25,6 +25,7 @@ class BattleScene extends Phaser.Scene {
         this.currentPlayerCreature = this.playerData.getFirstAlive();
         this.battleActive = true;
         this.processingTurn = false;
+        this.participants = new Set([this.currentPlayerCreature.uid]);
     }
 
     create() {
@@ -305,6 +306,7 @@ class BattleScene extends Phaser.Scene {
         this.battleSystem.playerCreature = creature;
         this.battleSystem.battleOver = false;
         this.battleSystem.result = null;
+        this.participants.add(creature.uid);
 
         // Refresh UI
         this.battleUI.destroy();
@@ -422,12 +424,13 @@ class BattleScene extends Phaser.Scene {
                 }
             }
 
-            const xp   = this.battleSystem.calculateXP();
-            const gold = this.isWild ? this.battleSystem.calculateGold() : this.trainerReward;
+            const xp      = this.battleSystem.calculateXP();
+            const gold    = this.isWild ? this.battleSystem.calculateGold() : this.trainerReward;
+            const xpEach  = Math.max(1, Math.floor(xp / this.participants.size));
 
             this.time.delayedCall(800, () => {
-                this.battleUI.showXPGain(this.currentPlayerCreature, xp, () => {
-                    this.endBattle({ won: true, xp, gold });
+                this.battleUI.showXPGain(this.currentPlayerCreature, xpEach, () => {
+                    this.endBattle({ won: true, xp, gold, participants: [...this.participants] });
                 });
             });
         } else {
