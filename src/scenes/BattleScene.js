@@ -134,7 +134,7 @@ class BattleScene extends Phaser.Scene {
                             c => c.isAlive() && c.uid !== this.currentPlayerCreature.uid
                         );
                         if (nextAlive) {
-                            this.switchCreature(nextAlive);
+                            this.switchCreature(nextAlive, true);
                             return;
                         }
                     }
@@ -297,12 +297,14 @@ class BattleScene extends Phaser.Scene {
         this.switchCreature(creature);
     }
 
-    switchCreature(creature) {
+    switchCreature(creature, forced = false) {
         this.currentPlayerCreature.resetBattleBuffs();
         this.currentPlayerCreature = creature;
         this.currentPlayerCreature.resetBattleBuffs();
-        
+
         this.battleSystem.playerCreature = creature;
+        this.battleSystem.battleOver = false;
+        this.battleSystem.result = null;
 
         // Refresh UI
         this.battleUI.destroy();
@@ -314,9 +316,15 @@ class BattleScene extends Phaser.Scene {
         this.time.delayedCall(1000, () => {
             if (this.battleActive) {
                 this.processingTurn = false;
-                // Troca conta como turno — inimigo ataca
-                this.battleSystem.isPlayerTurn = false;
-                this.processEnemyTurn();
+                if (forced) {
+                    // Criatura morreu — inimigo já atacou, é a vez do jogador
+                    this.battleSystem.isPlayerTurn = true;
+                    this.showMainMenu();
+                } else {
+                    // Troca voluntária conta como turno — inimigo ataca
+                    this.battleSystem.isPlayerTurn = false;
+                    this.processEnemyTurn();
+                }
             }
         });
     }
