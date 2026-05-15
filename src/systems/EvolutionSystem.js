@@ -7,7 +7,7 @@ class EvolutionSystem {
      * XP necessário para subir de nível
      */
     static xpForLevel(level) {
-        return Math.floor(10 * Math.pow(level, 1.5));
+        return Math.floor(10 * Math.pow(level, 1.2));
     }
 
     /**
