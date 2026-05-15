@@ -422,11 +422,13 @@ class BattleScene extends Phaser.Scene {
                 }
             }
 
-            const xp = this.battleSystem.calculateXP();
+            const xp   = this.battleSystem.calculateXP();
             const gold = this.isWild ? this.battleSystem.calculateGold() : this.trainerReward;
 
-            this.time.delayedCall(1500, () => {
-                this.endBattle({ won: true, xp, gold });
+            this.time.delayedCall(800, () => {
+                this.battleUI.showXPGain(this.currentPlayerCreature, xp, () => {
+                    this.endBattle({ won: true, xp, gold });
+                });
             });
         } else {
             // Lose
