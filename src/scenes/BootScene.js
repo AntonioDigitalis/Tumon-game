@@ -65,6 +65,8 @@ this.load.image('umbravox_shiny', 'assets/sprites/umbravox_shiny.png');
 
 this.load.image('normousse', 'assets/sprites/normousse.png');
 this.load.image('normousse_shiny', 'assets/sprites/normousse_shiny.png');
+        this.load.image('title_bg', 'assets/title_bg.png');
+
         this.load.on('progress', (value) => {
             bar.width = 300 * value;
         });
