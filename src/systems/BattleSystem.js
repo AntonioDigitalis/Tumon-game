@@ -88,6 +88,9 @@ class BattleSystem {
         // Processa status effects no fim do turno
         this.processStatusEffects();
 
+        if (this.battleOver) {
+            return { ...result, battleEnd: true, result: this.result };
+        }
         return result;
     }
 

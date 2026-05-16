@@ -99,6 +99,20 @@ class BattleScene extends Phaser.Scene {
         );
     }
 
+    showForcedSwitchMenu() {
+        this.processingTurn = false;
+        this.battleUI.setLogText(`${this.currentPlayerCreature.name} desmaiou! Escolha a próxima criatura!`);
+        this.battleUI.showSwitchActions(
+            this.playerData.party,
+            this.currentPlayerCreature.uid,
+            (creature) => {
+                this.processingTurn = true;
+                this.switchCreature(creature, true);
+            },
+            null
+        );
+    }
+
     handleAttack(moveId) {
         if (this.processingTurn || !this.battleActive) return;
         this.processingTurn = true;
@@ -129,13 +143,12 @@ class BattleScene extends Phaser.Scene {
 
             this.animateAttackResult(result, 'player', () => {
                 if (result.battleEnd) {
-                    // Check if player has more alive creatures
                     if (result.result === 'lose') {
-                        const nextAlive = this.playerData.party.find(
+                        const hasAlive = this.playerData.party.some(
                             c => c.isAlive() && c.uid !== this.currentPlayerCreature.uid
                         );
-                        if (nextAlive) {
-                            this.switchCreature(nextAlive, true);
+                        if (hasAlive) {
+                            this.showForcedSwitchMenu();
                             return;
                         }
                     }

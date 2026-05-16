@@ -278,8 +278,10 @@ class BattleUI {
             this.addButton(bx, by, `${creature.name} Lv.${creature.level}`, () => onSelect(creature), color, 200, 44);
         });
 
-        const menuH = this.elements.actionMenuH;
-        this.addButton(0, menuH / 2 - 22, '← Voltar', onBack, 0x555555, 140, 32);
+        if (onBack) {
+            const menuH = this.elements.actionMenuH;
+            this.addButton(0, menuH / 2 - 22, '← Voltar', onBack, 0x555555, 140, 32);
+        }
     }
 
     // btnW e btnH opcionais (padrão 160x36)
