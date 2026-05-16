@@ -213,7 +213,11 @@ class WorldScene extends Phaser.Scene {
         trainer_npc_2:    'npc_trainer',
         guide_npc:        'npc_guide',
         leader_fire_npc:  'npc_trainer',
-        leader_ice_npc:   'npc_trainer'
+        leader_ice_npc:   'npc_trainer',
+        barqueiro_npc:    'npc_guide',
+        trainer_ilha:     'npc_trainer',
+        trainer_floresta: 'npc_trainer',
+        boss_templo:      'npc_trainer'
     };
 
     mapNpcs.forEach(npcId => {

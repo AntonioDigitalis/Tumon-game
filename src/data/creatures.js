@@ -286,13 +286,34 @@ const EncounterTables = {
         { id: 'frostclaw', weight: 10 },
         { id: 'psychowl', weight: 15 },
         { id: 'zapplet', weight: 15 }
+    ],
+    ilha_misteriosa: [
+        { id: 'frostclaw', weight: 20 },
+        { id: 'umbravox',  weight: 20 },
+        { id: 'psychowl',  weight: 20 },
+        { id: 'voltarex',  weight: 20 },
+        { id: 'floravex',  weight: 20 }
+    ],
+    floresta_sombria: [
+        { id: 'shadewisp', weight: 30 },
+        { id: 'thornvine', weight: 25 },
+        { id: 'psychowl',  weight: 25 },
+        { id: 'umbravox',  weight: 20 }
+    ],
+    templo_antigo: [
+        { id: 'psychowl',  weight: 35 },
+        { id: 'umbravox',  weight: 35 },
+        { id: 'shadewisp', weight: 30 }
     ]
 };
 
 // Nível das criaturas por mapa
 const EncounterLevels = {
-    route1: { min: 2, max: 6 },
-    route2: { min: 5, max: 10 },
-    route3: { min: 8, max: 15 },
-    cave:   { min: 10, max: 20 }
+    route1:           { min: 2,  max: 6  },
+    route2:           { min: 5,  max: 10 },
+    route3:           { min: 8,  max: 15 },
+    cave:             { min: 10, max: 20 },
+    ilha_misteriosa:  { min: 25, max: 35 },
+    floresta_sombria: { min: 12, max: 20 },
+    templo_antigo:    { min: 20, max: 30 }
 };
