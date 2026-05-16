@@ -14,20 +14,6 @@ class InventoryScene extends Phaser.Scene {
         this.currentTab = data.currentTab || 'party';
     }
 
-    preload() {
-        Log.info("Iniciando preload...");
-
-        ItemAssetLoader.loadAll(this);
-
-        this.load.on('complete', () => {
-            Log.ok("Preload concluído com sucesso!");
-        });
-
-        this.load.on('loaderror', (file) => {
-            Log.error(`Erro ao carregar asset: ${file.key}`);
-        });
-    }
-
     create() {
         const w = CONST.GAME_WIDTH;
         const h = CONST.GAME_HEIGHT;
@@ -125,32 +111,42 @@ class InventoryScene extends Phaser.Scene {
         const w = CONST.GAME_WIDTH;
         const h = CONST.GAME_HEIGHT;
 
-        const overlay = this.add.container(0, 0).setDepth(500);
-        const bg = this.add.rectangle(w / 2, h / 2, 400, 420, 0x0a0a1e, 0.98);
+        const overlay = this.add.container(w / 2, h / 2).setDepth(500);
+
+        // BACKGROUND
+        const bg = this.add.rectangle(0, 0, 420, 440, 0x0a0a1e, 0.98);
         bg.setStrokeStyle(2, 0x3498db);
         overlay.add(bg);
 
-        const cx = w / 2;
-        let cy = h / 2 - 180;
+        let y = -170;
 
-        // Sprite
-        const sprite = this.add.rectangle(cx, cy + 20, 50, 50, creature.spriteColor);
-        sprite.setStrokeStyle(2, 0xffffff);
+        // SPRITE
+        const spriteKeyRaw = creature.isShiny ? creature.spriteShinyKey : creature.spriteKey;
+        const sprite = this.add.image(0, y, getSpriteKey(this, spriteKeyRaw)).setDisplaySize(96, 96);
         overlay.add(sprite);
 
-        cy += 60;
+        y += 60;
 
-        const shiny = creature.isShiny ? ' ✨ SHINY' : '';
-        const titleText = this.add.text(cx, cy, `${creature.name}${shiny}`, {
-            fontFamily: 'Courier New', fontSize: '16px', color: '#ffffff', fontStyle: 'bold'
-        }).setOrigin(0.5);
-        overlay.add(titleText);
+        // TITLE
+        const title = this.add.text(0, y,`${creature.name}${creature.isShiny ? ' ✨' : ''}`,
+            {
+                fontFamily: 'Courier New',
+                fontSize: '18px',
+                color: '#ffffff',
+                fontStyle: 'bold'
+            }
+        ).setOrigin(0.5);
 
-        cy += 20;
+        overlay.add(title);
 
+        y += 30;
+
+        // ELEMENT COLOR
         const elemColor = CONST.ELEMENT_COLORS[creature.element] || '#ffffff';
+
+        // INFO
         const infoLines = [
-            `Elemento: ${ElementTable.names[creature.element]}`,
+            `Elemento: ${ElementTable.names?.[creature.element] || creature.element}`,
             `Nível: ${creature.level} | XP: ${creature.xp}/${EvolutionSystem.xpForLevel(creature.level)}`,
             `Genética: ${Helpers.geneticStars(creature.genetics)} | Tier: ${creature.tier}`,
             `Raridade: ${creature.rarity}`,
@@ -159,24 +155,34 @@ class InventoryScene extends Phaser.Scene {
             `Ataque: ${creature.getEffectiveStat('attack')}`,
             `Defesa: ${creature.getEffectiveStat('defense')}`,
             `Velocidade: ${creature.getEffectiveStat('speed')}`,
-            `Chance Crítica: ${(creature.getEffectiveCritChance() * 100).toFixed(1)}%`,
+            `Crítico: ${(creature.getEffectiveCritChance() * 100).toFixed(1)}%`,
             ``,
-            `Ataques: ${creature.moves.map(m => MovesDB[m]?.name || m).join(', ')}`,
-            `Traits: ${creature.traits.length > 0 ? creature.traits.join(', ') : 'nenhum'}`,
+            `Ataques:`,
+            ...(creature.moves || []).map(m => `  • ${MovesDB[m]?.name || m}`),
+            `Traits: ${creature.traits?.length ? creature.traits.join(', ') : 'nenhum'}`
         ];
 
-        infoLines.forEach((line, i) => {
-            const text = this.add.text(cx - 170, cy + 5 + i * 18, line, {
-                fontFamily: 'Courier New', fontSize: '11px', color: line.startsWith('Elemento') ? elemColor : '#cccccc'
+        infoLines.forEach((line) => {
+            const txt = this.add.text(-190, y, line, {
+                fontFamily: 'Courier New',
+                fontSize: '11px',
+                color: line.startsWith('Elemento') ? elemColor : '#cccccc'
             });
-            overlay.add(text);
+
+            overlay.add(txt);
+            y += 16;
         });
 
-        // Close
-        const closeBtn = this.add.text(cx, h / 2 + 190, '[ Fechar ]', {
-            fontFamily: 'Courier New', fontSize: '14px', color: '#e74c3c',
+        // CLOSE BUTTON
+        const closeBtn = this.add.text(0, y + 20, '[ Fechar ]', {
+            fontFamily: 'Courier New',
+            fontSize: '14px',
+            color: '#e74c3c',
+            backgroundColor: '#1a1a2e',
             padding: { x: 10, y: 5 }
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        })
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true });
 
         closeBtn.on('pointerdown', () => overlay.destroy());
         overlay.add(closeBtn);

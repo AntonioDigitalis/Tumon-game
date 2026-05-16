@@ -25,6 +25,7 @@ class BattleScene extends Phaser.Scene {
         this.currentPlayerCreature = this.playerData.getFirstAlive();
         this.battleActive = true;
         this.processingTurn = false;
+        this.participants = new Set([this.currentPlayerCreature.uid]);
     }
 
     create() {
@@ -134,7 +135,7 @@ class BattleScene extends Phaser.Scene {
                             c => c.isAlive() && c.uid !== this.currentPlayerCreature.uid
                         );
                         if (nextAlive) {
-                            this.switchCreature(nextAlive);
+                            this.switchCreature(nextAlive, true);
                             return;
                         }
                     }
@@ -297,12 +298,15 @@ class BattleScene extends Phaser.Scene {
         this.switchCreature(creature);
     }
 
-    switchCreature(creature) {
+    switchCreature(creature, forced = false) {
         this.currentPlayerCreature.resetBattleBuffs();
         this.currentPlayerCreature = creature;
         this.currentPlayerCreature.resetBattleBuffs();
-        
+
         this.battleSystem.playerCreature = creature;
+        this.battleSystem.battleOver = false;
+        this.battleSystem.result = null;
+        this.participants.add(creature.uid);
 
         // Refresh UI
         this.battleUI.destroy();
@@ -314,9 +318,15 @@ class BattleScene extends Phaser.Scene {
         this.time.delayedCall(1000, () => {
             if (this.battleActive) {
                 this.processingTurn = false;
-                // Troca conta como turno — inimigo ataca
-                this.battleSystem.isPlayerTurn = false;
-                this.processEnemyTurn();
+                if (forced) {
+                    // Criatura morreu — inimigo já atacou, é a vez do jogador
+                    this.battleSystem.isPlayerTurn = true;
+                    this.showMainMenu();
+                } else {
+                    // Troca voluntária conta como turno — inimigo ataca
+                    this.battleSystem.isPlayerTurn = false;
+                    this.processEnemyTurn();
+                }
             }
         });
     }
@@ -414,11 +424,14 @@ class BattleScene extends Phaser.Scene {
                 }
             }
 
-            const xp = this.battleSystem.calculateXP();
-            const gold = this.isWild ? this.battleSystem.calculateGold() : this.trainerReward;
+            const xp      = this.battleSystem.calculateXP();
+            const gold    = this.isWild ? this.battleSystem.calculateGold() : this.trainerReward;
+            const xpEach  = Math.max(1, Math.floor(xp / this.participants.size));
 
-            this.time.delayedCall(1500, () => {
-                this.endBattle({ won: true, xp, gold });
+            this.time.delayedCall(800, () => {
+                this.battleUI.showXPGain(this.currentPlayerCreature, xpEach, () => {
+                    this.endBattle({ won: true, xp, gold, participants: [...this.participants] });
+                });
             });
         } else {
             // Lose

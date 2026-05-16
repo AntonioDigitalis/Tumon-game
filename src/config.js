@@ -26,6 +26,7 @@ const gameConfig = {
         WorldScene,
         BattleScene,
         InventoryScene,
+        ShopScene,
         FusionScene,
         BreedingScene,
         DialogScene

@@ -22,20 +22,7 @@ class WorldScene extends Phaser.Scene {
         this.gridY = 0;
         this.lastGrassTile = null;
         this.inputLocked = false;
-    }
-
-    preload() {
-        Log.info("Iniciando preload...");
-
-        ItemAssetLoader.loadAll(this);
-
-        this.load.on('complete', () => {
-            Log.ok("Preload concluído com sucesso!");
-        });
-
-        this.load.on('loaderror', (file) => {
-            Log.error(`Erro ao carregar asset: ${file.key}`);
-        });
+        this.playerDirection = 'down';
     }
 
     create() {
@@ -168,11 +155,31 @@ class WorldScene extends Phaser.Scene {
         this.gridX = spawnX;
         this.gridY = spawnY;
 
-        this.playerSprite = this.add.image(
+        this.playerSprite = this.add.sprite(
             spawnX * ts + ts / 2,
             spawnY * ts + ts / 2,
-            'player'
+            'playerSheet',
+            0
         ).setDepth(100).setDisplaySize(ts * 0.8, ts * 1);
+
+        this.createPlayerAnimations();
+    }
+
+    createPlayerAnimations() {
+        const S = 'playerSheet';
+        const mk = (key, frames, rate) => {
+            if (!this.anims.exists(key)) {
+                this.anims.create({
+                    key,
+                    frames: frames.map(f => ({ key: S, frame: f })),
+                    frameRate: rate,
+                    repeat: -1
+                });
+            }
+        };
+        mk('walk_down', [1, 2], 8);
+        mk('walk_up',   [4, 5], 8);
+        mk('walk_side', [7, 8], 8);
     }
 
     createNPCs() {
@@ -185,11 +192,18 @@ class WorldScene extends Phaser.Scene {
 
     // Mapa de textura por npcId
     const npcTextureMap = {
-        mom_npc:       'npc_mom',
-        healer_npc:    'npc_healer',
-        shop_npc:      'npc_merchant',
-        trainer_npc_1: 'npc_trainer',
-        trainer_npc_2: 'npc_trainer'
+        mom_npc:          'npc_mom',
+        healer_npc:       'npc_healer',
+        shop_npc:         'npc_merchant',
+        trainer_npc_1:    'npc_trainer',
+        trainer_npc_2:    'npc_trainer',
+        guide_npc:        'npc_guide',
+        leader_fire_npc:  'npc_trainer',
+        leader_ice_npc:   'npc_trainer',
+        barqueiro_npc:    'npc_guide',
+        trainer_ilha:     'npc_trainer',
+        trainer_floresta: 'npc_trainer',
+        boss_templo:      'npc_trainer'
     };
 
     mapNpcs.forEach(npcId => {
@@ -249,9 +263,17 @@ class WorldScene extends Phaser.Scene {
 
     update(time, delta) {
         if (this.dialog.isVisible) {
-            if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
-                Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
-                Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey('ENTER'))) {
+            if (this.dialog.choiceActive) {
+                if (Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.wasd.up)) {
+                    this.dialog.navigateChoice(-1);
+                } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down) || Phaser.Input.Keyboard.JustDown(this.wasd.down)) {
+                    this.dialog.navigateChoice(1);
+                } else if (Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
+                           Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey('ENTER'))) {
+                    this.dialog.confirmChoice();
+                }
+            } else if (Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
+                       Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey('ENTER'))) {
                 this.dialog.advance();
             }
             return;
@@ -268,7 +290,15 @@ class WorldScene extends Phaser.Scene {
         else if (this.cursors.down.isDown || this.wasd.down.isDown) dy = 1;
         else if (this.cursors.left.isDown || this.wasd.left.isDown) dx = -1;
         else if (this.cursors.right.isDown || this.wasd.right.isDown) dx = 1;
-        else return;
+        else {
+            // Nenhuma tecla pressionada e parado — volta ao frame idle
+            if (!this.isMoving && this.playerSprite.anims.isPlaying) {
+                this.playerSprite.anims.stop();
+                const idleDir = (this.playerDirection === 'left' || this.playerDirection === 'right') ? 'side' : (this.playerDirection || 'down');
+                this.playerSprite.setFrame({ down: 0, up: 3, side: 6 }[idleDir] ?? 0);
+            }
+            return;
+        }
 
         if (this.isMoving) return;
 
@@ -284,6 +314,12 @@ class WorldScene extends Phaser.Scene {
         for (const [npcId, npc] of Object.entries(this.npcSprites)) {
             if (npc.data.x === newX && npc.data.y === newY) return;
         }
+
+        // Atualiza direção e inicia animação de caminhada
+        this.playerDirection = dx < 0 ? 'left' : dx > 0 ? 'right' : dy < 0 ? 'up' : 'down';
+        const animDir = dx !== 0 ? 'side' : this.playerDirection;
+        this.playerSprite.setFlipX(dx > 0);
+        this.playerSprite.play('walk_' + animDir, true);
 
         this.isMoving = true;
         const ts = CONST.TILE_SIZE;
@@ -430,7 +466,11 @@ class WorldScene extends Phaser.Scene {
 
     handleInteract() {
         if (this.dialog.isVisible) {
-            this.dialog.advance();
+            if (this.dialog.choiceActive) {
+                this.dialog.confirmChoice();
+            } else {
+                this.dialog.advance();
+            }
             return;
         }
 
@@ -476,16 +516,45 @@ class WorldScene extends Phaser.Scene {
     }
 
     handleBankNPC(npcData) {
+        const gold = this.playerData.gold;
+        const balance = this.playerData.bankGold;
         this.dialog.show([
-            `${npcData.name}: Olá querido!`,
-            `Seu ouro: ${this.playerData.gold} | No banco: ${this.playerData.bankGold}`,
-            'Vou guardar 100 de ouro para você, ok?'
+            `${npcData.name}: Olá querido! Ouro em mãos: ${gold} | Guardado comigo: ${balance}.`
         ], () => {
-            if (this.playerData.depositGold(100)) {
-                this.hud.showNotification('💰 100 ouro depositado!', '#f1c40f');
-            } else {
-                this.hud.showNotification('Ouro insuficiente!', '#e74c3c');
-            }
+            this.dialog.showChoice('O que deseja fazer?', ['Depositar', 'Sacar', 'Sair'], (choice) => {
+                if (choice === 0) this._bankDeposit();
+                else if (choice === 1) this._bankWithdraw();
+            });
+        });
+    }
+
+    _bankDeposit() {
+        const gold = this.playerData.gold;
+        if (gold <= 0) {
+            this.dialog.show(['Você não tem ouro para depositar!']);
+            return;
+        }
+        this.dialog.showChoice(`Depositar quanto? (${gold} disponível)`, ['Tudo', 'Metade', 'Cancelar'], (choice) => {
+            if (choice === 2) return;
+            const amount = choice === 0 ? gold : Math.floor(gold / 2);
+            if (amount <= 0) { this.dialog.show(['Ouro insuficiente!']); return; }
+            this.playerData.depositGold(amount);
+            this.hud.showNotification(`+${amount} ouro guardado!`, '#f1c40f');
+            this.hud.update(this.playerData, this.currentMap.name);
+        });
+    }
+
+    _bankWithdraw() {
+        const balance = this.playerData.bankGold;
+        if (balance <= 0) {
+            this.dialog.show(['Não há ouro guardado!']);
+            return;
+        }
+        this.dialog.showChoice(`Sacar quanto? (${balance} guardado)`, ['Tudo', 'Metade', 'Cancelar'], (choice) => {
+            if (choice === 2) return;
+            const amount = choice === 0 ? balance : Math.floor(balance / 2);
+            this.playerData.withdrawGold(amount);
+            this.hud.showNotification(`${amount} ouro sacado!`, '#2ecc71');
             this.hud.update(this.playerData, this.currentMap.name);
         });
     }
@@ -568,20 +637,29 @@ class WorldScene extends Phaser.Scene {
 
         if (result.won) {
             this.playerData.stats.battlesWon++;
+            if (this.playerData.bankGold > 0) {
+                const interest = Math.max(1, Math.floor(this.playerData.bankGold * 0.01));
+                this.playerData.bankGold += interest;
+                this.hud.showNotification(`+${interest} ouro guardado com a mãe!`, '#f1c40f');
+            }
             if (result.gold) this.playerData.addGold(result.gold);
             if (result.xp) {
-                const first = this.playerData.getFirstAlive();
-                if (first) {
-                    const levelResults = EvolutionSystem.addXP(first, result.xp);
-                    levelResults.forEach(r => {
-                        if (r.levelUp) this.hud.showNotification(`⬆ ${first.name} subiu para Lv.${r.newLevel}!`, '#f1c40f');
+                const uids     = result.participants || [];
+                const eligible = uids.length > 0
+                    ? this.playerData.party.filter(c => uids.includes(c.uid))
+                    : [this.playerData.getFirstAlive()].filter(Boolean);
+                const xpEach   = eligible.length > 0 ? Math.max(1, Math.floor(result.xp / eligible.length)) : 0;
+
+                eligible.forEach(c => {
+                    EvolutionSystem.addXP(c, xpEach).forEach(r => {
+                        if (r.levelUp) this.hud.showNotification(`⬆ ${c.name} subiu para Lv.${r.newLevel}!`, '#f1c40f');
                         if (r.evolved) {
                             this.playerData.stats.evolutions++;
-                            this.hud.showNotification(`✨ ${first.name} evoluiu para ${r.evolvedTo}!`, '#9b59b6');
+                            this.hud.showNotification(`✨ ${c.name} evoluiu para ${r.evolvedTo}!`, '#9b59b6');
                         }
-                        if (r.mutated) this.hud.showNotification(`🧬 ${first.name} sofreu uma mutação!`, '#e74c3c');
+                        if (r.mutated) this.hud.showNotification(`🧬 ${c.name} sofreu uma mutação!`, '#e74c3c');
                     });
-                }
+                });
             }
             if (result.captured) {
                 this.playerData.stats.captures++;
@@ -608,20 +686,28 @@ class WorldScene extends Phaser.Scene {
 
         if (result.won) {
             this.playerData.stats.battlesWon++;
+            if (this.playerData.bankGold > 0) {
+                const interest = Math.max(1, Math.floor(this.playerData.bankGold * 0.01));
+                this.playerData.bankGold += interest;
+                this.hud.showNotification(`+${interest} ouro guardado com a mãe!`, '#f1c40f');
+            }
             this.playerData.defeatedTrainers.push(npcData.id);
             this.playerData.addGold(npcData.reward);
 
-            this.playerData.party.forEach(c => {
-                if (c.isAlive()) {
-                    const levelResults = EvolutionSystem.addXP(c, result.xp || 50);
-                    levelResults.forEach(r => {
-                        if (r.levelUp) this.hud.showNotification(`⬆ ${c.name} Lv.${r.newLevel}!`, '#f1c40f');
-                        if (r.evolved) {
-                            this.playerData.stats.evolutions++;
-                            this.hud.showNotification(`✨ Evolução!`, '#9b59b6');
-                        }
-                    });
-                }
+            const uids     = result.participants || [];
+            const eligible = uids.length > 0
+                ? this.playerData.party.filter(c => c.isAlive() && uids.includes(c.uid))
+                : this.playerData.party.filter(c => c.isAlive());
+            const xpEach   = eligible.length > 0 ? Math.max(1, Math.floor((result.xp || 50) / eligible.length)) : 0;
+
+            eligible.forEach(c => {
+                EvolutionSystem.addXP(c, xpEach).forEach(r => {
+                    if (r.levelUp) this.hud.showNotification(`⬆ ${c.name} Lv.${r.newLevel}!`, '#f1c40f');
+                    if (r.evolved) {
+                        this.playerData.stats.evolutions++;
+                        this.hud.showNotification(`✨ Evolução!`, '#9b59b6');
+                    }
+                });
             });
 
             this.hud.showNotification(`💰 +${npcData.reward} ouro!`, '#f1c40f');
@@ -646,13 +732,21 @@ class WorldScene extends Phaser.Scene {
 
         if (result.won) {
             this.playerData.stats.battlesWon++;
+            if (this.playerData.bankGold > 0) {
+                const interest = Math.max(1, Math.floor(this.playerData.bankGold * 0.01));
+                this.playerData.bankGold += interest;
+                this.hud.showNotification(`+${interest} ouro guardado com a mãe!`, '#f1c40f');
+            }
             this.playerData.defeatedLeaders.push(leader.id);
             this.playerData.badges.push(leader.badge);
             this.playerData.addGold(leader.reward);
 
-            this.playerData.party.forEach(c => {
-                if (c.isAlive()) EvolutionSystem.addXP(c, 200);
-            });
+            const uids     = result.participants || [];
+            const eligible = uids.length > 0
+                ? this.playerData.party.filter(c => c.isAlive() && uids.includes(c.uid))
+                : this.playerData.party.filter(c => c.isAlive());
+            const xpEach   = eligible.length > 0 ? Math.max(1, Math.floor(200 / eligible.length)) : 0;
+            eligible.forEach(c => EvolutionSystem.addXP(c, xpEach));
 
             this.dialog.show(leader.dialog.after, () => {
                 this.hud.showNotification(`🏅 ${leader.badge} obtido!`, '#f1c40f');
@@ -671,16 +765,27 @@ class WorldScene extends Phaser.Scene {
     }
 
     openShop() {
+        if (this.dialog.isVisible) return;
         const items = ShopInventory[this.currentMap.id] || ShopInventory.town || [];
-        this.showShopMenu(items);
+        this.inputLocked = true;
+        this.scene.launch('ShopScene', {
+            playerData: this.playerData,
+            items,
+            onClose: () => {
+                this.scene.resume();
+                this.inputLocked = false;
+                this.hud.update(this.playerData, this.currentMap.name);
+                this.saveGame();
+            }
+        });
+        this.scene.pause();
     }
 
-    showShopMenu(items) {
+    _shopMenuLegacy(items) {
         const W = this.scale.width;
         const H = this.scale.height;
 
-// Linha atual:
-const container = this.add.container(CONST.GAME_WIDTH / 2, CONST.GAME_HEIGHT / 2).setDepth(1100).setScrollFactor(0);
+        const container = this.add.container(CONST.GAME_WIDTH / 2, CONST.GAME_HEIGHT / 2).setDepth(1100).setScrollFactor(0);
 
         const bg = this.add.rectangle(0, 0, 380, 340, 0x000000, 0.92);
         bg.setStrokeStyle(2, 0xf1c40f);

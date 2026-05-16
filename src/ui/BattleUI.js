@@ -45,11 +45,11 @@ class BattleUI {
     }
 
     createCreaturePanel(key, creature, x, y) {
+        const isPlayer = key === 'player';
         const panel = this.scene.add.container(x, y);
 
-        // Painel de fundo: 240px de largura, 80px de altura
         const panelW = 240;
-        const panelH = 80;
+        const panelH = isPlayer ? 92 : 80;
         const bg = this.scene.add.rectangle(panelW / 2, panelH / 2, panelW, panelH, 0x000000, 0.78);
         bg.setStrokeStyle(1, 0x888888);
         panel.setDepth(3);
@@ -71,47 +71,65 @@ class BattleUI {
             color: elementColor
         });
 
-        // Barra de HP — dentro dos 240px, com 8px de margem em cada lado
+        // Barra de HP
         const barW = panelW - 16;
-        const barX = 8 + barW / 2; // centro da barra
-        const barY = 50;
+        const barX = 8 + barW / 2;
+        const hpBarY = isPlayer ? 46 : 50;
         const hpRatio = creature.currentHp / creature.getMaxHp();
         const hpColor = hpRatio > 0.5 ? 0x2ecc71 : hpRatio > 0.25 ? 0xf1c40f : 0xe74c3c;
 
-        const hpBarBg = this.scene.add.rectangle(barX, barY, barW, 12, 0x333333);
-        // Barra de HP com origem à esquerda para animar a largura corretamente
-        const hpBar = this.scene.add.rectangle(8, barY, barW * hpRatio, 12, hpColor).setOrigin(0, 0.5);
+        const hpBarBg = this.scene.add.rectangle(barX, hpBarY, barW, 12, 0x333333);
+        const hpBar = this.scene.add.rectangle(8, hpBarY, barW * hpRatio, 12, hpColor).setOrigin(0, 0.5);
 
-        const hpText = this.scene.add.text(barX, barY, `${creature.currentHp}/${creature.getMaxHp()}`, {
+        const hpText = this.scene.add.text(barX, hpBarY, `${creature.currentHp}/${creature.getMaxHp()}`, {
             fontFamily: 'Courier New',
             fontSize: '9px',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Status (burn, stun etc.) — canto superior direito do painel
+        // Status (burn, stun etc.)
         const statusText = this.scene.add.text(panelW - 8, 6, '', {
             fontFamily: 'Courier New',
             fontSize: '9px',
             color: '#ff6b6b'
         }).setOrigin(1, 0);
 
-        panel.add([bg, name, info, hpBarBg, hpBar, hpText, statusText]);
+        const toAdd = [bg, name, info, hpBarBg, hpBar, hpText, statusText];
 
-        this.elements[`${key}Panel`] = panel;
-        this.elements[`${key}HpBar`] = hpBar;
-        this.elements[`${key}HpText`] = hpText;
-        this.elements[`${key}HpBarBg`] = hpBarBg; // guarda para saber a largura máxima
-        this.elements[`${key}HpBarW`] = barW;
-        this.elements[`${key}Name`] = name;
-        this.elements[`${key}Status`] = statusText;
+        // Barra de XP — apenas no painel do jogador
+        if (isPlayer) {
+            const xpBarY = 70;
+            const xpBarH = 6;
+            const needed = EvolutionSystem.xpForLevel(creature.level);
+            const xpRatio = needed > 0 ? Math.min(1, creature.xp / needed) : 0;
+
+            const xpBarBg = this.scene.add.rectangle(barX, xpBarY, barW, xpBarH, 0x111122);
+            xpBarBg.setStrokeStyle(1, 0x334455);
+            const xpBar = this.scene.add.rectangle(8, xpBarY, barW * xpRatio, xpBarH, 0x3498db).setOrigin(0, 0.5);
+
+            toAdd.push(xpBarBg, xpBar);
+
+            this.elements[`${key}XpBar`]  = xpBar;
+            this.elements[`${key}XpBarW`] = barW;
+        }
+
+        panel.add(toAdd);
+
+        this.elements[`${key}Panel`]    = panel;
+        this.elements[`${key}HpBar`]    = hpBar;
+        this.elements[`${key}HpText`]   = hpText;
+        this.elements[`${key}HpBarBg`]  = hpBarBg;
+        this.elements[`${key}HpBarW`]   = barW;
+        this.elements[`${key}Name`]     = name;
+        this.elements[`${key}Status`]   = statusText;
     }
 
     createCreatureSprite(key, creature, x, y) {
-       const size = key === 'player' ? 96 : 80;
-        const sprite = this.scene.add.image(x, y, creature.spriteKey);
+        const size = key === 'player' ? 96 : 80;
+        const sprite = this.scene.add.image(x, y, getSpriteKey(this.scene, creature.spriteKey));
 
-       sprite.setScale(0.3);
-      sprite.setDepth(2);
+        sprite.setScale(0.3);
+        sprite.setDepth(2);
         
         // Ícone do elemento
         const elementSymbols = {
@@ -320,6 +338,151 @@ class BattleUI {
             const labels = { burn: '🔥BRN', poison: '☠PSN', freeze: '❄FRZ', stun: '⚡STN' };
             statusEl.setText(creature.status ? (labels[creature.status] || '') : '');
         }
+    }
+
+    // -------------------------------------------------------
+    // Animação de ganho de XP (chamada ao vencer batalha)
+    // -------------------------------------------------------
+    showXPGain(creature, xpGained, callback) {
+        const xpBar = this.elements.playerXpBar;
+        const barW  = this.elements.playerXpBarW;
+        const nameEl = this.elements.playerName;
+
+        if (!xpBar || !barW) { callback(); return; }
+
+        this.setLogText(`+${xpGained} XP!`);
+
+        let simXp    = creature.xp;
+        let simLevel = creature.level;
+        let remaining = xpGained;
+
+        const step = () => {
+            const needed    = EvolutionSystem.xpForLevel(simLevel);
+            const spaceLeft = needed - simXp;
+
+            if (remaining >= spaceLeft) {
+                // Vai subir de nível — enche a barra até 100%
+                this.scene.tweens.add({
+                    targets: xpBar,
+                    displayWidth: barW,
+                    duration: 400,
+                    ease: 'Linear',
+                    onComplete: () => {
+                        remaining -= spaceLeft;
+                        simXp = 0;
+                        simLevel++;
+
+                        const oldLevel = simLevel - 1;
+
+                        xpBar.setFillStyle(0xf1c40f); // flash dourado no level-up
+                        if (nameEl) {
+                            const shinyIcon = creature.isShiny ? '✨ ' : '';
+                            nameEl.setText(`${shinyIcon}${creature.name} Lv.${simLevel}`);
+                        }
+                        this.setLogText(`⬆ ${creature.name} subiu para Lv.${simLevel}!`);
+
+                        this.showStatGains(creature, oldLevel, simLevel, () => {
+                            xpBar.setFillStyle(0x3498db);
+                            xpBar.displayWidth = 0;
+                            this.scene.time.delayedCall(150, step);
+                        });
+                    }
+                });
+            } else {
+                // Sem level-up — enche parcialmente
+                simXp += remaining;
+                const ratio = simXp / needed;
+                this.scene.tweens.add({
+                    targets: xpBar,
+                    displayWidth: barW * ratio,
+                    duration: 700,
+                    ease: 'Linear',
+                    onComplete: () => {
+                        this.scene.time.delayedCall(500, callback);
+                    }
+                });
+            }
+        };
+
+        step();
+    }
+
+    // -------------------------------------------------------
+    // Box de ganho de status ao subir de nível
+    // -------------------------------------------------------
+    showStatGains(creature, oldLevel, newLevel, onClose) {
+        const W = this.W;
+        const H = this.H;
+
+        const gm   = 1 + (creature.genetics - 1) * 0.1;
+        const tm   = 1 + (creature.tier - 1) * 0.15;
+        const calc = (base, lv) => Math.floor(base * gm * tm * (1 + lv * 0.05));
+
+        const statDefs = [
+            { name: 'HP',        fn: lv => calc(creature.baseStats.hp,      lv) + 10 },
+            { name: 'Ataque',    fn: lv => calc(creature.baseStats.attack,   lv) },
+            { name: 'Defesa',    fn: lv => calc(creature.baseStats.defense,  lv) },
+            { name: 'Velocidade',fn: lv => calc(creature.baseStats.speed,    lv) }
+        ];
+
+        const panelW = 252;
+        const panelH = 176;
+        const box = this.scene.add.container(W / 2, H / 2).setDepth(2000);
+
+        const bg = this.scene.add.rectangle(0, 0, panelW, panelH, 0x0a0a1e, 0.97);
+        bg.setStrokeStyle(2, 0xf1c40f);
+        box.add(bg);
+
+        // Título
+        box.add(this.scene.add.text(0, -panelH / 2 + 16,
+            `⬆  Lv.${oldLevel}  →  Lv.${newLevel}`,
+            { fontFamily: 'Courier New', fontSize: '14px', color: '#f1c40f', fontStyle: 'bold' }
+        ).setOrigin(0.5));
+
+        // Divisor
+        box.add(this.scene.add.rectangle(0, -panelH / 2 + 30, panelW - 20, 1, 0x445566));
+
+        // Linhas de stat
+        statDefs.forEach((s, i) => {
+            const oldVal = s.fn(oldLevel);
+            const newVal = s.fn(newLevel);
+            const delta  = newVal - oldVal;
+            const y      = -panelH / 2 + 52 + i * 30;
+
+            box.add(this.scene.add.text(-panelW / 2 + 14, y, s.name,
+                { fontFamily: 'Courier New', fontSize: '11px', color: '#aaaaaa' }
+            ).setOrigin(0, 0.5));
+
+            box.add(this.scene.add.text(panelW / 2 - 14, y,
+                `${oldVal}  →  ${newVal}   +${delta}`,
+                { fontFamily: 'Courier New', fontSize: '11px', color: '#2ecc71' }
+            ).setOrigin(1, 0.5));
+        });
+
+        this.elements.statGainBox = box;
+
+        // Entrada com pop
+        box.setAlpha(0).setScale(0.82);
+        this.scene.tweens.add({
+            targets: box,
+            alpha: 1, scaleX: 1, scaleY: 1,
+            duration: 180,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                this.scene.time.delayedCall(2400, () => {
+                    this.scene.tweens.add({
+                        targets: box,
+                        alpha: 0,
+                        duration: 180,
+                        onComplete: () => {
+                            box.destroy();
+                            delete this.elements.statGainBox;
+                            onClose();
+                        }
+                    });
+                });
+            }
+        });
     }
 
     // -------------------------------------------------------

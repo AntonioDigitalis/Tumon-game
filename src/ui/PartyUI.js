@@ -21,8 +21,8 @@ class PartyUI {
             }
 
             // Sprite mini
-            const sprite = scene.add.rectangle(30, cy + 30, 40, 40, creature.spriteColor);
-            sprite.setStrokeStyle(1, 0xffffff);
+            const spriteKey = creature.isShiny ? creature.spriteShinyKey : creature.spriteKey;
+            const sprite = scene.add.image(30, cy + 30, getSpriteKey(scene, spriteKey)).setDisplaySize(64, 64);
 
             // Name
             const shiny = creature.isShiny ? '✨' : '';

@@ -15,6 +15,11 @@ class DialogBox {
         this.fullText = '';
         this.displayedText = '';
         this.typeTimer = null;
+        this.choiceActive = false;
+        this.choiceIndex = 0;
+        this.choiceCallback = null;
+        this._choiceTexts = null;
+        this._choiceCursor = null;
     }
 
     create() {
@@ -142,7 +147,79 @@ class DialogBox {
         }
     }
 
+    showChoice(header, options, callback) {
+        this.choiceActive = true;
+        this.choiceIndex = 0;
+        this.choiceCallback = callback;
+        this.isVisible = true;
+        this.container.setVisible(true);
+        this.promptText.setVisible(false);
+        this.typing = false;
+        if (this.typeTimer) this.typeTimer.remove();
+        this.textObj.setText(header);
+
+        const H = this.scene.scale.height;
+        const boxTop = H - 120 - 120;
+
+        this._choiceTexts = options.map((opt, i) => {
+            const t = this.scene.add.text(120 + 38, boxTop + 42 + i * 22, opt, {
+                fontFamily: 'Courier New',
+                fontSize: '14px',
+                color: '#ffffff'
+            });
+            this.container.add(t);
+            return t;
+        });
+
+        this._choiceCursor = this.scene.add.text(120 + 20, boxTop + 42, '►', {
+            fontFamily: 'Courier New',
+            fontSize: '14px',
+            color: '#f1c40f'
+        });
+        this.container.add(this._choiceCursor);
+        this._updateChoiceCursor();
+    }
+
+    navigateChoice(dir) {
+        if (!this.choiceActive) return;
+        this.choiceIndex = (this.choiceIndex + dir + this._choiceTexts.length) % this._choiceTexts.length;
+        this._updateChoiceCursor();
+    }
+
+    _updateChoiceCursor() {
+        const H = this.scene.scale.height;
+        const boxTop = H - 120 - 120;
+        this._choiceCursor.setY(boxTop + 42 + this.choiceIndex * 22);
+        this._choiceTexts.forEach((t, i) => t.setColor(i === this.choiceIndex ? '#f1c40f' : '#ffffff'));
+    }
+
+    confirmChoice() {
+        if (!this.choiceActive) return;
+        const selected = this.choiceIndex;
+        const cb = this.choiceCallback;
+        this.choiceCallback = null;
+        this._cleanupChoice();
+        this.isVisible = false;
+        this.container.setVisible(false);
+        if (this.typeTimer) this.typeTimer.remove();
+        cb(selected);
+    }
+
+    _cleanupChoice() {
+        if (this._choiceTexts) {
+            this._choiceTexts.forEach(t => t.destroy());
+            this._choiceTexts = null;
+        }
+        if (this._choiceCursor) {
+            this._choiceCursor.destroy();
+            this._choiceCursor = null;
+        }
+        this.choiceActive = false;
+        this.promptText.setVisible(true);
+    }
+
     destroy() {
+        if (this.choiceActive) this._cleanupChoice();
         if (this.typeTimer) this.typeTimer.remove();
         if (this.container) this.container.destroy();
     }
