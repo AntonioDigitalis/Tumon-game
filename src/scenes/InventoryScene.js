@@ -94,33 +94,153 @@ class InventoryScene extends Phaser.Scene {
     }
 
     renderParty(startY) {
+        this._reorderSelected = null;
+        this._partyStartY = startY;
+        this._buildPartyList();
+    }
+
+    _buildPartyList() {
         const w = CONST.GAME_WIDTH;
+        const startY = this._partyStartY;
+
+        if (this._partyContainer) this._partyContainer.destroy();
+        this._partyContainer = this.add.container(0, 0);
 
         if (this.playerData.party.length === 0) {
-            this.add.text(w / 2, startY + 50, 'Nenhuma criatura no time.', {
-                fontFamily: 'Courier New', fontSize: '14px', color: '#888888'
-            }).setOrigin(0.5);
+            this._partyContainer.add(
+                this.add.text(w / 2, startY + 50, 'Nenhuma criatura no time.', {
+                    fontFamily: 'Courier New', fontSize: '14px', color: '#888888'
+                }).setOrigin(0.5)
+            );
             return;
         }
 
-        PartyUI.createPartyList(this, this.playerData.party, 20, startY, (creature, index) => {
-            this.showCreatureDetail(creature);
+        // Dica quando uma criatura está selecionada para reordenar
+        if (this._reorderSelected !== null) {
+            const tip = this.add.text(w / 2, startY - 8,
+                'Clique em outra criatura para trocar a posicao', {
+                fontFamily: 'Courier New', fontSize: '10px', color: '#f1c40f'
+            }).setOrigin(0.5);
+            this._partyContainer.add(tip);
+        }
+
+        this.playerData.party.forEach((creature, i) => {
+            const isSelected = this._reorderSelected === i;
+            const cy = startY + i * 75;
+
+            const bg = this.add.rectangle(195, cy + 30, 350, 65, 0x1a1a2e);
+            bg.setStrokeStyle(isSelected ? 3 : 1, isSelected ? 0xf1c40f : (creature.isAlive() ? 0x3498db : 0xe74c3c));
+            bg.setInteractive({ useHandCursor: true });
+            bg.on('pointerover', () => { if (!isSelected) bg.setStrokeStyle(2, 0xf1c40f); });
+            bg.on('pointerout', () => { if (!isSelected) bg.setStrokeStyle(1, creature.isAlive() ? 0x3498db : 0xe74c3c); });
+            bg.on('pointerdown', () => {
+                if (this._reorderSelected === null) {
+                    this._showCreatureOptions(creature, i);
+                } else if (this._reorderSelected === i) {
+                    this._reorderSelected = null;
+                    this._buildPartyList();
+                } else {
+                    const a = this._reorderSelected, b = i;
+                    [this.playerData.party[a], this.playerData.party[b]] =
+                        [this.playerData.party[b], this.playerData.party[a]];
+                    this._reorderSelected = null;
+                    this._buildPartyList();
+                }
+            });
+
+            const procKey = `proc_${creature.templateId}${creature.isShiny ? '_shiny' : ''}`;
+            const sprite = this.textures.exists(procKey)
+                ? this.add.image(30, cy + 30, procKey).setDisplaySize(48, 48)
+                : this.add.rectangle(30, cy + 30, 40, 40, creature.spriteColor).setStrokeStyle(1, 0xffffff);
+
+            const shiny = creature.isShiny ? '✨' : '';
+            const nameText = this.add.text(60, cy + 8,
+                `${shiny}${creature.name} Lv.${creature.level}${isSelected ? '  ◄' : ''}`, {
+                fontFamily: 'Courier New', fontSize: '13px',
+                color: isSelected ? '#f1c40f' : '#ffffff', fontStyle: 'bold'
+            });
+
+            const elemColor = CONST.ELEMENT_COLORS[creature.element] || '#ffffff';
+            const infoText = this.add.text(60, cy + 26,
+                `${ElementTable.names[creature.element]} | ${Helpers.geneticStars(creature.genetics)} | T${creature.tier}`, {
+                fontFamily: 'Courier New', fontSize: '10px', color: elemColor
+            });
+
+            const hpRatio = creature.currentHp / creature.getMaxHp();
+            const hpColor = hpRatio > 0.5 ? 0x2ecc71 : hpRatio > 0.25 ? 0xf1c40f : 0xe74c3c;
+            const hpBg   = this.add.rectangle(275, cy + 20, 120, 10, 0x333333);
+            const hpFill = this.add.rectangle(215, cy + 20, 120 * hpRatio, 10, hpColor).setOrigin(0, 0.5);
+            const hpLabel = this.add.text(275, cy + 20,
+                `${creature.currentHp}/${creature.getMaxHp()}`, {
+                fontFamily: 'Courier New', fontSize: '9px', color: '#ffffff'
+            }).setOrigin(0.5);
+
+            const statsText = this.add.text(215, cy + 36,
+                `ATK:${creature.getEffectiveStat('attack')} DEF:${creature.getEffectiveStat('defense')} SPD:${creature.getEffectiveStat('speed')}`, {
+                fontFamily: 'Courier New', fontSize: '9px', color: '#aaaaaa'
+            });
+
+            this._partyContainer.add([bg, sprite, nameText, infoText, hpBg, hpFill, hpLabel, statsText]);
         });
 
-        // Storage count
-        this.add.text(20, startY + this.playerData.party.length * 75 + 15,
-            `📦 Armazém: ${this.playerData.storage.length} criatura(s)`, {
+        // Storage count + lista compacta
+        const storageLabel = this.add.text(20, startY + this.playerData.party.length * 75 + 15,
+            `Armazem: ${this.playerData.storage.length} criatura(s)`, {
             fontFamily: 'Courier New', fontSize: '11px', color: '#888888'
         });
+        this._partyContainer.add(storageLabel);
 
-        // Storage list (compact)
         this.playerData.storage.slice(0, 5).forEach((creature, i) => {
             const sy = startY + this.playerData.party.length * 75 + 40 + i * 22;
-            this.add.text(30, sy,
+            const t = this.add.text(30, sy,
                 `${creature.isShiny ? '✨' : ''}${creature.name} Lv.${creature.level} ${Helpers.geneticStars(creature.genetics)}`, {
                 fontFamily: 'Courier New', fontSize: '10px', color: '#666666'
             });
+            this._partyContainer.add(t);
         });
+    }
+
+    _showCreatureOptions(creature, index) {
+        const w = CONST.GAME_WIDTH;
+        const h = CONST.GAME_HEIGHT;
+        const popup = this.add.container(0, 0).setDepth(600);
+
+        const blocker = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.45)
+            .setInteractive();
+        blocker.on('pointerdown', () => popup.destroy());
+        popup.add(blocker);
+
+        const bx = w / 2, by = h / 2;
+        const box = this.add.rectangle(bx, by, 260, 170, 0x0d1b2a)
+            .setStrokeStyle(2, 0x3498db);
+        popup.add(box);
+
+        const shiny = creature.isShiny ? '✨' : '';
+        popup.add(this.add.text(bx, by - 60, `${shiny}${creature.name} Lv.${creature.level}`, {
+            fontFamily: 'Courier New', fontSize: '14px', color: '#ffffff', fontStyle: 'bold'
+        }).setOrigin(0.5));
+
+        const makeBtn = (label, color, y, action) => {
+            const btn = this.add.text(bx, y, label, {
+                fontFamily: 'Courier New', fontSize: '13px', color,
+                backgroundColor: '#1a2a3a', padding: { x: 18, y: 8 }
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            btn.on('pointerover', () => btn.setColor('#f1c40f'));
+            btn.on('pointerout', () => btn.setColor(color));
+            btn.on('pointerdown', action);
+            popup.add(btn);
+        };
+
+        makeBtn('Ver Status', '#ffffff', by - 20, () => {
+            popup.destroy();
+            this.showCreatureDetail(creature);
+        });
+        makeBtn('Reordenar', '#3498db', by + 22, () => {
+            popup.destroy();
+            this._reorderSelected = index;
+            this._buildPartyList();
+        });
+        makeBtn('Cancelar', '#666666', by + 64, () => popup.destroy());
     }
 
     showCreatureDetail(creature) {
