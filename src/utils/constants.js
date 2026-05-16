@@ -56,7 +56,11 @@ const CONST = {
         ROUTE_1: 'route1',
         ROUTE_2: 'route2',
         ROUTE_3: 'route3',
-        CAVE: 'cave'
+        CAVE: 'cave',
+        PORTO_COSTA: 'porto_costa',
+        ILHA_MISTERIOSA: 'ilha_misteriosa',
+        FLORESTA_SOMBRIA: 'floresta_sombria',
+        TEMPLO_ANTIGO: 'templo_antigo'
     },
 
     // Element colors

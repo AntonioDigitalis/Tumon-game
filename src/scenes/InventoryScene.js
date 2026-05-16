@@ -106,6 +106,7 @@ class InventoryScene extends Phaser.Scene {
             });
         });
     }
+
     showCreatureDetail(creature) {
         const w = CONST.GAME_WIDTH;
         const h = CONST.GAME_HEIGHT;

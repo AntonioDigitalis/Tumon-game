@@ -20,7 +20,7 @@ class PartyUI {
                 bg.on('pointerout', () => bg.setStrokeStyle(1, creature.isAlive() ? 0x3498db : 0xe74c3c));
             }
 
-            // Sprite
+            // Sprite mini
             const spriteKey = creature.isShiny ? creature.spriteShinyKey : creature.spriteKey;
             const sprite = scene.add.image(30, cy + 30, getSpriteKey(scene, spriteKey)).setDisplaySize(24, 24);
             sprite.setScale(0.06);
