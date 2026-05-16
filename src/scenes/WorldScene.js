@@ -22,6 +22,7 @@ class WorldScene extends Phaser.Scene {
         this.gridY = 0;
         this.lastGrassTile = null;
         this.inputLocked = false;
+        this.playerDirection = 'down';
     }
 
     preload() {
@@ -168,11 +169,31 @@ class WorldScene extends Phaser.Scene {
         this.gridX = spawnX;
         this.gridY = spawnY;
 
-        this.playerSprite = this.add.image(
+        this.playerSprite = this.add.sprite(
             spawnX * ts + ts / 2,
             spawnY * ts + ts / 2,
-            'player'
+            'playerSheet',
+            0
         ).setDepth(100).setDisplaySize(ts * 0.8, ts * 1);
+
+        this.createPlayerAnimations();
+    }
+
+    createPlayerAnimations() {
+        const S = 'playerSheet';
+        const mk = (key, frames, rate) => {
+            if (!this.anims.exists(key)) {
+                this.anims.create({
+                    key,
+                    frames: frames.map(f => ({ key: S, frame: f })),
+                    frameRate: rate,
+                    repeat: -1
+                });
+            }
+        };
+        mk('walk_down', [1, 2], 8);
+        mk('walk_up',   [4, 5], 8);
+        mk('walk_side', [7, 8], 8);
     }
 
     createNPCs() {
@@ -279,7 +300,15 @@ class WorldScene extends Phaser.Scene {
         else if (this.cursors.down.isDown || this.wasd.down.isDown) dy = 1;
         else if (this.cursors.left.isDown || this.wasd.left.isDown) dx = -1;
         else if (this.cursors.right.isDown || this.wasd.right.isDown) dx = 1;
-        else return;
+        else {
+            // Nenhuma tecla pressionada e parado — volta ao frame idle
+            if (!this.isMoving && this.playerSprite.anims.isPlaying) {
+                this.playerSprite.anims.stop();
+                const idleDir = (this.playerDirection === 'left' || this.playerDirection === 'right') ? 'side' : (this.playerDirection || 'down');
+                this.playerSprite.setFrame({ down: 0, up: 3, side: 6 }[idleDir] ?? 0);
+            }
+            return;
+        }
 
         if (this.isMoving) return;
 
@@ -295,6 +324,12 @@ class WorldScene extends Phaser.Scene {
         for (const [npcId, npc] of Object.entries(this.npcSprites)) {
             if (npc.data.x === newX && npc.data.y === newY) return;
         }
+
+        // Atualiza direção e inicia animação de caminhada
+        this.playerDirection = dx < 0 ? 'left' : dx > 0 ? 'right' : dy < 0 ? 'up' : 'down';
+        const animDir = dx !== 0 ? 'side' : this.playerDirection;
+        this.playerSprite.setFlipX(dx > 0);
+        this.playerSprite.play('walk_' + animDir, true);
 
         this.isMoving = true;
         const ts = CONST.TILE_SIZE;
