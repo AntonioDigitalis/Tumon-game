@@ -44,11 +44,12 @@ class InventoryScene extends Phaser.Scene {
             { key: 'fusion', label: '🔮 Fusão' },
             { key: 'breed', label: '🧬 Breeding' },
             { key: 'achievements', label: '🏆 Conquistas' },
-            { key: 'stats', label: '📊 Stats' }
+            { key: 'stats', label: '📊 Stats' },
+            { key: 'map', label: '🗺️ Mapa' }
         ];
 
         tabs.forEach((tab, i) => {
-            const tx = 30 + i * 130;
+            const tx = 8 + i * 113;
             const btn = this.add.text(tx, 48, tab.label, {
                 fontFamily: 'Courier New',
                 fontSize: '11px',
@@ -80,6 +81,7 @@ class InventoryScene extends Phaser.Scene {
             case 'items': this.renderItems(contentY); break;
             case 'achievements': this.renderAchievements(contentY); break;
             case 'stats': this.renderStats(contentY); break;
+            case 'map': this.renderWorldMap(contentY); break;
         }
 
         const closeBtn = this.add.text(w / 2, h - 20, '[ Fechar - ESC ]', {
@@ -262,6 +264,100 @@ class InventoryScene extends Phaser.Scene {
             `🎯 Bônus: Captura +${(bonuses.captureRate * 100).toFixed(0)}% | Crit +${(bonuses.critRate * 100).toFixed(0)}% | Loot +${(bonuses.lootRate * 100).toFixed(0)}%`, {
             fontFamily: 'Courier New', fontSize: '10px', color: '#9b59b6'
         }).setOrigin(0.5);
+    }
+
+    renderWorldMap(startY) {
+        const w = CONST.GAME_WIDTH;
+        const currentMapId = this.playerData.currentMap || 'town';
+
+        this.add.text(w / 2, startY + 8, '🗺️ MAPA MUNDIAL', {
+            fontFamily: 'Courier New', fontSize: '14px', color: '#f1c40f', fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        const currentMap = MapsDB[currentMapId];
+        this.add.text(w / 2, startY + 26, `📍 Localização atual: ${currentMap ? currentMap.name : '?'}`, {
+            fontFamily: 'Courier New', fontSize: '11px', color: '#2ecc71'
+        }).setOrigin(0.5);
+
+        const nodes = [
+            { id: 'ilha_misteriosa', label: 'Ilha\nMisteriosa',    x: 140, y: startY + 70,  color: 0x1a5276 },
+            { id: 'porto_costa',     label: 'Porto da\nCosta',      x: 140, y: startY + 160, color: 0x2471a3 },
+            { id: 'route2',          label: 'Rota 2\nCosta Azul',   x: 310, y: startY + 160, color: 0x239b56 },
+            { id: 'route1',          label: 'Rota 1\nTrilha Verde', x: 490, y: startY + 160, color: 0x1e8449 },
+            { id: 'town',            label: 'Vila\nAurora',         x: 655, y: startY + 160, color: 0x7d3c98 },
+            { id: 'route3',          label: 'Rota 3\nPico Sombrio', x: 310, y: startY + 255, color: 0x5d6d7e },
+            { id: 'cave',            label: 'Caverna\ndas Sombras', x: 490, y: startY + 255, color: 0x4a235a },
+            { id: 'floresta_sombria',label: 'Floresta\nSombria',    x: 490, y: startY + 350, color: 0x145a32 },
+            { id: 'templo_antigo',   label: 'Templo\nAntigo',       x: 490, y: startY + 440, color: 0x512e5f },
+        ];
+
+        const connections = [
+            ['ilha_misteriosa', 'porto_costa'],
+            ['porto_costa',     'route2'],
+            ['route2',          'route1'],
+            ['route1',          'town'],
+            ['route2',          'route3'],
+            ['route1',          'cave'],
+            ['cave',            'floresta_sombria'],
+            ['floresta_sombria','templo_antigo'],
+        ];
+
+        const nodeMap = {};
+        nodes.forEach(n => { nodeMap[n.id] = n; });
+
+        const gfx = this.add.graphics();
+        connections.forEach(([a, b]) => {
+            const na = nodeMap[a];
+            const nb = nodeMap[b];
+            if (!na || !nb) return;
+            gfx.lineStyle(2, 0x666666, 1);
+            gfx.beginPath();
+            gfx.moveTo(na.x, na.y);
+            gfx.lineTo(nb.x, nb.y);
+            gfx.strokePath();
+        });
+
+        const nw = 98, nh = 40;
+        nodes.forEach(node => {
+            const isCurrent = node.id === currentMapId;
+
+            const rect = this.add.rectangle(node.x, node.y, nw, nh, node.color, 1);
+            rect.setStrokeStyle(isCurrent ? 3 : 1, isCurrent ? 0xf1c40f : 0x888888);
+
+            this.add.text(node.x, node.y, node.label, {
+                fontFamily: 'Courier New',
+                fontSize: '9px',
+                color: isCurrent ? '#f1c40f' : '#dddddd',
+                align: 'center'
+            }).setOrigin(0.5);
+
+            if (isCurrent) {
+                this.add.text(node.x, node.y - nh / 2 - 12, '📍', { fontSize: '14px' }).setOrigin(0.5);
+            }
+        });
+
+        // Arenas annotation on Route 3
+        this.add.text(310, startY + 295, '🔥 🧊 Líderes', {
+            fontFamily: 'Courier New', fontSize: '9px', color: '#aaaaaa', align: 'center'
+        }).setOrigin(0.5);
+
+        // Legend
+        const lx = 655, ly = startY + 270;
+        this.add.rectangle(lx, ly + 60, 130, 120, 0x0a0a1e, 0.9)
+            .setStrokeStyle(1, 0x444444);
+        const legend = [
+            { color: '#27ae60', label: '  Rota (encontros)' },
+            { color: '#7d3c98', label: '  Cidade / Vila' },
+            { color: '#2471a3', label: '  Costa / Porto' },
+            { color: '#4a235a', label: '  Caverna / Dungeon' },
+            { color: '#512e5f', label: '  Templo / Especial' },
+        ];
+        legend.forEach((item, i) => {
+            this.add.rectangle(lx - 52, ly + 20 + i * 20, 10, 10, parseInt(item.color.replace('#', '0x')));
+            this.add.text(lx - 45, ly + 14 + i * 20, item.label, {
+                fontFamily: 'Courier New', fontSize: '9px', color: item.color
+            });
+        });
     }
 
     openFusion() {
