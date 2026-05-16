@@ -122,6 +122,9 @@ this.load.image('normousse_shiny', 'assets/sprites/normousse_shiny.png');
         this.createNPCTexture('npc_merchant', ts, ts * 1.2, 0x2ecc71);
         this.createNPCTexture('npc_trainer',  ts, ts * 1.2, 0xe74c3c);
         this.createNPCTexture('npc_guide',    ts, ts * 1.2, 0x95a5a6);
+
+        // Creature sprites procedurais
+        CreatureSprites.generateAll(this);
     }
 
     createColorTexture(key, w, h, color) {

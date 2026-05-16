@@ -134,8 +134,10 @@ class InventoryScene extends Phaser.Scene {
         let cy = h / 2 - 180;
 
         // Sprite
-        const sprite = this.add.rectangle(cx, cy + 20, 50, 50, creature.spriteColor);
-        sprite.setStrokeStyle(2, 0xffffff);
+        const procKey = `proc_${creature.templateId}${creature.isShiny ? '_shiny' : ''}`;
+        const sprite = this.textures.exists(procKey)
+            ? this.add.image(cx, cy + 20, procKey).setDisplaySize(64, 64)
+            : this.add.rectangle(cx, cy + 20, 50, 50, creature.spriteColor).setStrokeStyle(2, 0xffffff);
         overlay.add(sprite);
 
         cy += 60;
