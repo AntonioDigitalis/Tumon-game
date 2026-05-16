@@ -24,20 +24,6 @@ class WorldScene extends Phaser.Scene {
         this.inputLocked = false;
     }
 
-    preload() {
-        Log.info("Iniciando preload...");
-
-        ItemAssetLoader.loadAll(this);
-
-        this.load.on('complete', () => {
-            Log.ok("Preload concluído com sucesso!");
-        });
-
-        this.load.on('loaderror', (file) => {
-            Log.error(`Erro ao carregar asset: ${file.key}`);
-        });
-    }
-
     create() {
         // FIX: captura as dimensões reais do canvas ANTES de aplicar zoom.
         // this.scale.width/height retorna o tamanho do elemento canvas no DOM,

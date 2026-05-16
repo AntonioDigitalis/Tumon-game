@@ -14,20 +14,6 @@ class InventoryScene extends Phaser.Scene {
         this.currentTab = data.currentTab || 'party';
     }
 
-    preload() {
-        Log.info("Iniciando preload...");
-
-        ItemAssetLoader.loadAll(this);
-
-        this.load.on('complete', () => {
-            Log.ok("Preload concluído com sucesso!");
-        });
-
-        this.load.on('loaderror', (file) => {
-            Log.error(`Erro ao carregar asset: ${file.key}`);
-        });
-    }
-
     create() {
         const w = CONST.GAME_WIDTH;
         const h = CONST.GAME_HEIGHT;
