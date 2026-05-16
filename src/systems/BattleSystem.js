@@ -184,9 +184,10 @@ class BattleSystem {
         const critMult = isCrit ? CONST.CRIT_MULTIPLIER : 1.0;
         result.critical = isCrit;
 
-        // Fórmula de dano
+        // Fórmula de dano — nível 30 vs 3 dá ~3x dano extra, mesmo nível dá 1x
+        const levelMult = Math.pow(attacker.level / Math.max(1, defender.level), 0.5);
         let damage = Math.floor(
-            ((move.power * (atk / def)) / 5) * stab * effectiveness * critMult * Helpers.randomFloat(0.85, 1.0)
+            ((move.power * (atk / def)) / 5) * stab * effectiveness * critMult * levelMult * Helpers.randomFloat(0.85, 1.0)
         );
         
         damage = Math.max(1, damage); // Mínimo 1 de dano
