@@ -1,28 +1,38 @@
-function safeImageLoadWithFallback(scene, key, path, fallback = 'asset_missing') {
+function ensureProceduralFallback(scene, creatureKey) {
 
-    // evita duplicar listener
-    if (!scene.__imageLoadErrorHooked) {
-        scene.load.on('loaderror', (file) => {
+    const procKey = `proc_${creatureKey}`;
 
-            Log.error(`Falha ao carregar: ${file.key}`);
-            Log.warn(`Usando fallback: ${fallback}`);
-
-            if (!scene.textures.exists(fallback)) {
-                const g = scene.add.graphics();
-                g.fillStyle(0xff0000, 1);
-                g.fillRect(0, 0, 32, 32);
-                g.generateTexture(fallback, 32, 32);
-                g.destroy();
-            }
-        });
-
-        scene.__imageLoadErrorHooked = true;
+    if (scene.textures.exists(procKey)) {
+        return procKey;
     }
 
-    // registra imagem normalmente
+    // tenta achar na DB pra gerar certo
+    const creature = CreaturesDB[creatureKey];
+    if (!creature) return 'asset_missing';
+
+    CreatureSprites._draw(
+        scene,
+        procKey,
+        creature.element,
+        creature.variant || 0,
+        creature.bodyColor || 0x888888,
+        creature.eyeColor || 0xffffff
+    );
+
+    return procKey;
+}
+
+function safeImageLoadWithFallback(scene, key, path) {
+
+    if (!scene.__missingAssets) {
+        scene.__missingAssets = new Set();
+    }
+
     scene.load.image(key, path);
 
-    Log.info(`Registrado: ${key}`);
+    scene.load.on('loaderror', (file) => {
+        scene.__missingAssets.add(file.key);
+    });
 }
 
 const ItemAssetLoader = {
@@ -63,7 +73,23 @@ const SpriteAssetLoader = {
 };
 
 function getSpriteKey(scene, key) {
-    return scene.textures.exists(key)
-        ? key
-        : 'asset_missing';
+    if (scene.textures.exists(key)) return key;
+
+    const creature = CreaturesDB[key];
+    if (!creature) return 'asset_missing';
+
+    const procKey = `proc_${key}`;
+
+    if (!scene.textures.exists(procKey)) {
+        CreatureSprites._draw(
+            scene,
+            procKey,
+            creature.element,
+            creature.variant || 0,
+            creature.bodyColor || 0x888888,
+            creature.eyeColor || 0xffffff
+        );
+    }
+
+    return procKey;
 }

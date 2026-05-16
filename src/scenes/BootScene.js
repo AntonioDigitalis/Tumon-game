@@ -46,12 +46,15 @@ class BootScene extends Phaser.Scene {
     create() {
         // Gera texturas procedurais
         this.generateTextures();
-        
+
         // Vai para o menu
         this.scene.start('MenuScene');
     }
 
     generateTextures() {
+        // 1. gerar sprites procedurais
+        CreatureSprites.generateAll(this);
+
         const ts = CONST.TILE_SIZE;
 
         // Grama normal
@@ -94,8 +97,6 @@ class BootScene extends Phaser.Scene {
         this.createNPCTexture('npc_trainer',  ts, ts * 1.2, 0xe74c3c);
         this.createNPCTexture('npc_guide',    ts, ts * 1.2, 0x95a5a6);
 
-        // Creature sprites procedurais
-        CreatureSprites.generateAll(this);
     }
 
     createColorTexture(key, w, h, color) {

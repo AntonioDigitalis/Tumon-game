@@ -122,8 +122,7 @@ class InventoryScene extends Phaser.Scene {
 
         // SPRITE
         const spriteKeyRaw = creature.isShiny ? creature.spriteShinyKey : creature.spriteKey;
-        const sprite = this.add.image(0, y, getSpriteKey(this, spriteKeyRaw)).setDisplaySize(64, 64);
-        sprite.setScale(0.1);
+        const sprite = this.add.image(0, y, getSpriteKey(this, spriteKeyRaw)).setDisplaySize(96, 96);
         overlay.add(sprite);
 
         y += 60;
