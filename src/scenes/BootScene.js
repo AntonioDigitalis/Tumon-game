@@ -115,7 +115,7 @@ this.load.image('normousse_shiny', 'assets/sprites/normousse_shiny.png');
         this.createPlayerSpriteSheet('playerSheet', ts, Math.round(ts * 1.2));
 
         // NPCs
-        this.createNPCTexture('npc_mom',      ts, ts * 1.2, 0xff69b4);
+        this.createMomTexture('npc_mom', ts, Math.round(ts * 1.2));
         this.createNPCTexture('npc_healer',   ts, ts * 1.2, 0xff6b9d);
         this.createNPCTexture('npc_merchant', ts, ts * 1.2, 0x2ecc71);
         this.createNPCTexture('npc_trainer',  ts, ts * 1.2, 0xe74c3c);
@@ -498,6 +498,120 @@ this.load.image('normousse_shiny', 'assets/sprites/normousse_shiny.png');
         for (let i = 0; i < cols; i++) {
             canvas.add(i, 0, i * w, 0, w, h);
         }
+
+        canvas.refresh();
+    }
+
+    createMomTexture(key, w, h) {
+        const canvas = this.textures.createCanvas(key, w, h);
+        const ctx = canvas.getContext();
+        ctx.imageSmoothingEnabled = false;
+
+        const p = (x, y, pw, ph, c) => {
+            ctx.fillStyle = c;
+            ctx.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(pw)), Math.max(1, Math.round(ph)));
+        };
+
+        // Sombra elíptica (levemente maior pelo vestido)
+        ctx.fillStyle = 'rgba(0,0,0,0.18)';
+        ctx.beginPath();
+        ctx.ellipse(w/2, h - 3, w * 0.36, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // ---- Sapatos (aparecem abaixo da saia) ----
+        p(w*0.30, h*0.88, w*0.14, h*0.06, '#7a4a30');
+        p(w*0.56, h*0.88, w*0.14, h*0.06, '#7a4a30');
+
+        // ---- Saia (trapézio — mais larga embaixo) ----
+        p(w*0.18, h*0.66, w*0.64, h*0.24, '#ff69b4');
+        p(w*0.18, h*0.66, w*0.07, h*0.24, '#e0508a'); // sombra esquerda
+        p(w*0.75, h*0.66, w*0.07, h*0.24, '#e0508a'); // sombra direita
+        p(w*0.22, h*0.83, w*0.56, h*0.07, '#e0508a'); // barra inferior da saia
+        p(w*0.27, h*0.83, w*0.46, h*0.03, '#ff8dc4'); // fio decorativo da barra
+
+        // ---- Corpo / blusa ----
+        p(w*0.22, h*0.42, w*0.56, h*0.26, '#ff69b4');
+        p(w*0.22, h*0.42, w*0.06, h*0.26, '#e0508a'); // sombra lateral
+        p(w*0.72, h*0.42, w*0.06, h*0.26, '#e0508a');
+        p(w*0.27, h*0.42, w*0.46, h*0.05, '#ff8dc4'); // highlight superior
+
+        // Avental branco
+        p(w*0.32, h*0.46, w*0.36, h*0.18, '#f5f0e8');
+        p(w*0.32, h*0.46, w*0.04, h*0.18, '#ddd8cc');
+        p(w*0.64, h*0.46, w*0.04, h*0.18, '#ddd8cc');
+        p(w*0.36, h*0.42, w*0.28, h*0.05, '#f5f0e8'); // alça do avental
+
+        // ---- Braços ----
+        p(w*0.08, h*0.44, w*0.14, h*0.22, '#e8b89a');
+        p(w*0.08, h*0.44, w*0.04, h*0.22, '#d4a082');
+        p(w*0.78, h*0.44, w*0.14, h*0.22, '#e8b89a');
+        p(w*0.88, h*0.44, w*0.04, h*0.22, '#d4a082');
+        // Mangas
+        p(w*0.08, h*0.44, w*0.14, h*0.06, '#ff69b4');
+        p(w*0.78, h*0.44, w*0.14, h*0.06, '#ff69b4');
+        // Mãos
+        p(w*0.09, h*0.64, w*0.12, h*0.07, '#e8b89a');
+        p(w*0.79, h*0.64, w*0.12, h*0.07, '#e8b89a');
+
+        // ---- Pescoço ----
+        p(w*0.40, h*0.36, w*0.20, h*0.08, '#e8b89a');
+
+        // ---- Cabelo longo (castanho, cai pelos lados do corpo) ----
+        // Mechas laterais longas — desenhadas ANTES da cabeça para ficar atrás
+        p(w*0.16, h*0.08, w*0.10, h*0.54, '#5c2e0a'); // mecha esquerda
+        p(w*0.16, h*0.08, w*0.04, h*0.54, '#7a4018'); // highlight esq
+        p(w*0.74, h*0.08, w*0.10, h*0.54, '#5c2e0a'); // mecha direita
+        p(w*0.80, h*0.08, w*0.04, h*0.54, '#7a4018'); // highlight dir
+
+        // ---- Cabeça ----
+        p(w*0.26, h*0.14, w*0.48, h*0.24, '#f5c0a0');
+        p(w*0.26, h*0.14, w*0.05, h*0.24, '#d4a082');
+        p(w*0.69, h*0.14, w*0.05, h*0.24, '#d4a082');
+        p(w*0.28, h*0.32, w*0.44, h*0.06, '#e8a882'); // queixo/bochecha
+
+        // Bochechas rosadas
+        p(w*0.27, h*0.27, w*0.09, h*0.05, '#ffb0b8');
+        p(w*0.64, h*0.27, w*0.09, h*0.05, '#ffb0b8');
+
+        // Olhos femininos — maiores, com cílio
+        p(w*0.33, h*0.19, w*0.12, h*0.08, '#1a1a2e'); // olho esq
+        p(w*0.55, h*0.19, w*0.12, h*0.08, '#1a1a2e'); // olho dir
+        // Íris (roxo violeta)
+        p(w*0.34, h*0.20, w*0.09, h*0.06, '#6a3580');
+        p(w*0.56, h*0.20, w*0.09, h*0.06, '#6a3580');
+        // Brilho
+        p(w*0.34, h*0.20, w*0.03, h*0.02, '#ffffff');
+        p(w*0.56, h*0.20, w*0.03, h*0.02, '#ffffff');
+        // Cílios (linha fina acima do olho)
+        p(w*0.32, h*0.18, w*0.14, h*0.02, '#1a1a2e');
+        p(w*0.54, h*0.18, w*0.14, h*0.02, '#1a1a2e');
+
+        // Sobrancelhas finas e arqueadas
+        p(w*0.34, h*0.16, w*0.10, h*0.02, '#5d3a1a');
+        p(w*0.56, h*0.16, w*0.10, h*0.02, '#5d3a1a');
+
+        // Boca (levemente sorridente)
+        p(w*0.39, h*0.29, w*0.22, h*0.03, '#c05060');
+        p(w*0.41, h*0.30, w*0.18, h*0.02, '#e88898'); // lábio inferior
+
+        // ---- Topo do cabelo ----
+        p(w*0.24, h*0.02, w*0.52, h*0.16, '#5c2e0a');
+        p(w*0.28, h*0.00, w*0.44, h*0.09, '#7a4018');
+        p(w*0.34, h*0.01, w*0.22, h*0.04, '#9b5a2a'); // highlight
+        // Franja
+        p(w*0.28, h*0.13, w*0.44, h*0.05, '#5c2e0a');
+
+        // Laço rosa no cabelo (lado direito)
+        p(w*0.66, h*0.04, w*0.08, h*0.07, '#ff69b4');
+        p(w*0.70, h*0.04, w*0.04, h*0.04, '#e0508a');
+        p(w*0.74, h*0.04, w*0.08, h*0.07, '#ff69b4');
+        p(w*0.70, h*0.06, w*0.04, h*0.03, '#ff8dc4'); // nó central
+
+        // Contorno
+        ctx.strokeStyle = '#1a1a2e';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(Math.round(w*0.26), Math.round(h*0.14), Math.round(w*0.48), Math.round(h*0.24));
+        ctx.strokeRect(Math.round(w*0.22), Math.round(h*0.42), Math.round(w*0.56), Math.round(h*0.26));
 
         canvas.refresh();
     }
