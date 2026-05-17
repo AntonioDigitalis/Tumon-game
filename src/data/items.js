@@ -8,7 +8,7 @@ const ItemsDB = {
         captureRate: 1.0,
         price: 100,
         description: 'Runa básica de captura.',
-        color: 0xecf0f1
+        color: 0x11d535
     },
     rune_advanced: {
         id: 'rune_advanced',
@@ -18,7 +18,7 @@ const ItemsDB = {
         captureRate: 1.5,
         price: 300,
         description: 'Runa com taxa de captura melhorada.',
-        color: 0x3498db
+        color: 0x2b4ff1
     },
     rune_rare: {
         id: 'rune_rare',
@@ -28,7 +28,7 @@ const ItemsDB = {
         captureRate: 2.5,
         price: 800,
         description: 'Runa de alta performance.',
-        color: 0xf1c40f
+        color: 0xfa3636
     },
 
     // Poções
