@@ -238,13 +238,48 @@ class BattleUI {
         });
     }
 
-    showMoveActions(moves, onSelect, onBack) {
-        const validMoves = moves.map(id => MovesDB[id]).filter(Boolean);
+    showMoveActions(creature, onSelect, onBack) {
+        const validMoves = creature.moves.map(id => MovesDB[id]).filter(Boolean);
+        const btnW = 200, btnH = 44;
 
-        // 2 colunas; botão: 200px x 44px
-        this._layoutButtons(validMoves, 2, 200, 44, (move, bx, by) => {
-            const color = Helpers.hexToInt(CONST.ELEMENT_COLORS[move.element] || '#ffffff');
-            this.addButton(bx, by, `${move.name}  (${move.power || '—'})`, () => onSelect(move.id), color, 200, 44);
+        // 2 colunas; botão: 200px x 44px com PP
+        this._layoutButtons(validMoves, 2, btnW, btnH, (move, bx, by) => {
+            const currentPP = creature.getPP(move.id);
+            const maxPP     = move.pp;
+            const noPP      = currentPP <= 0;
+            const lowPP     = !noPP && currentPP <= Math.floor(maxPP * 0.3);
+
+            const baseColor = noPP
+                ? 0x444444
+                : Helpers.hexToInt(CONST.ELEMENT_COLORS[move.element] || '#ffffff');
+
+            const btn = this.scene.add.container(bx, by);
+            const bg  = this.scene.add.rectangle(0, 0, btnW, btnH, baseColor, noPP ? 0.35 : 0.85);
+            bg.setStrokeStyle(1, noPP ? 0x666666 : 0xffffff);
+
+            if (!noPP) {
+                bg.setInteractive({ useHandCursor: true });
+                bg.on('pointerover', () => bg.setFillStyle(baseColor, 1.0));
+                bg.on('pointerout',  () => bg.setFillStyle(baseColor, 0.85));
+                bg.on('pointerdown', () => onSelect(move.id));
+            }
+
+            const nameText = this.scene.add.text(0, -8,
+                `${move.name}  (${move.power || '—'})`, {
+                fontFamily: 'Courier New', fontSize: '11px',
+                color: noPP ? '#666666' : '#ffffff'
+            }).setOrigin(0.5);
+
+            const ppColor = noPP ? '#555555' : (lowPP ? '#ff6060' : '#88ff88');
+            const ppText  = this.scene.add.text(0, 9,
+                `PP ${currentPP}/${maxPP}`, {
+                fontFamily: 'Courier New', fontSize: '10px',
+                color: ppColor
+            }).setOrigin(0.5);
+
+            btn.add([bg, nameText, ppText]);
+            this.elements.actionMenu.add(btn);
+            this.elements.actionButtons.push(btn);
         });
 
         // Botão Voltar centralizado na última linha

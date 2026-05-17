@@ -76,7 +76,7 @@ class BattleScene extends Phaser.Scene {
 
     showAttackMenu() {
         this.battleUI.showMoveActions(
-            this.currentPlayerCreature.moves,
+            this.currentPlayerCreature,
             (moveId) => this.handleAttack(moveId),
             () => this.showMainMenu()
         );

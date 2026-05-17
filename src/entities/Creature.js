@@ -49,6 +49,13 @@ class Creature {
         this.currentHp = this.getMaxHp();
 
         this.moves = [...template.moves];
+
+        // PP atual por move (inicializado com o máximo de cada ataque)
+        this.currentPP = {};
+        this.moves.forEach(moveId => {
+            const m = MovesDB[moveId];
+            if (m) this.currentPP[moveId] = m.pp;
+        });
     }
 
     getMaxHp() {
@@ -93,6 +100,23 @@ class Creature {
         this.statusTurns = 0;
         this.buffAttack = 0;
         this.buffDefense = 0;
+        // Restaura PP de todos os ataques
+        this.moves.forEach(moveId => {
+            const m = MovesDB[moveId];
+            if (m) this.currentPP[moveId] = m.pp;
+        });
+    }
+
+    usePP(moveId) {
+        if (this.currentPP[moveId] > 0) this.currentPP[moveId]--;
+    }
+
+    getPP(moveId) {
+        if (this.currentPP[moveId] === undefined) {
+            const m = MovesDB[moveId];
+            this.currentPP[moveId] = m ? m.pp : 0;
+        }
+        return this.currentPP[moveId];
     }
 
     resetBattleBuffs() {
@@ -122,6 +146,7 @@ class Creature {
             baseAccuracy: this.baseAccuracy,
             currentHp: this.currentHp,
             moves: [...this.moves],
+            currentPP: { ...this.currentPP },
             status: this.status,
             statusTurns: this.statusTurns,
             mutationBonuses: Helpers.deepClone(this.mutationBonuses),
@@ -141,6 +166,16 @@ class Creature {
         creature.traits = data.traits || [];
         creature.status = data.status || null;
         creature.statusTurns = data.statusTurns || 0;
+
+        // Reconstrói currentPP — garante retrocompatibilidade com saves antigos
+        creature.currentPP = {};
+        (creature.moves || []).forEach(moveId => {
+            const m = MovesDB[moveId];
+            if (!m) return;
+            creature.currentPP[moveId] = (data.currentPP && data.currentPP[moveId] !== undefined)
+                ? data.currentPP[moveId]
+                : m.pp;
+        });
 
         return creature;
     }

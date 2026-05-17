@@ -45,6 +45,9 @@ class BattleSystem {
         const move = MovesDB[moveId];
         if (!move) return null;
 
+        if (this.playerCreature.getPP(moveId) <= 0) return null;
+        this.playerCreature.usePP(moveId);
+
         const result = this.executeMove(this.playerCreature, this.enemyCreature, move);
         
         // Verifica se inimigo morreu
@@ -71,6 +74,7 @@ class BattleSystem {
 
         // IA simples: escolhe melhor ataque
         const move = this.aiSelectMove();
+        this.enemyCreature.usePP(move.id);
         const result = this.executeMove(this.enemyCreature, this.playerCreature, move);
 
         // Verifica se jogador morreu
