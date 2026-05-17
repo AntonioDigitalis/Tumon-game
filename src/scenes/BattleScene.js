@@ -271,7 +271,6 @@ class BattleScene extends Phaser.Scene {
         rune.setDepth(1000);
 
         const runeColor = ItemsDB[result.runeUsed]?.color || 0xffffff;
-        const rays = [];
 
         const hoverX = enemySprite.x;
         const hoverY = enemySprite.y - 60;
@@ -283,78 +282,55 @@ class BattleScene extends Phaser.Scene {
             targets: rune,
             x: hoverX,
             y: hoverY,
-            duration: 400,
+            duration: 650,
             ease: 'Power2',
 
             onComplete: () => {
 
                 // --------------------------
-                // 2. raios (FORÇANDO VISIBILIDADE)
-                // --------------------------
-                for (let i = 0; i < 8; i++) {
-
-                    const ray = this.add.line(
-                        rune.x,
-                        rune.y,
-                        rune.x,
-                        rune.y,
-                        enemySprite.x,
-                        enemySprite.y,
-                        runeColor,
-                        1
-                    );
-
-                    ray.setOrigin(0, 0);
-                    ray.setDepth(9999);
-                    ray.setAlpha(1); // 👈 IMPORTANTE: não começa invisível
-
-                    this.tweens.add({
-                        targets: ray,
-                        alpha: 0,
-                        duration: 300,
-                        ease: 'Sine.easeOut',
-                        delay: i * 30
-                    });
-
-                    rays.push(ray);
-                }
-
-                // --------------------------
-                // 3. reação da criatura
+                // 2. reação da criatura
                 // --------------------------
                 enemySprite.setTint(runeColor);
 
-                const shake = this.tweens.add({
-                    targets: enemySprite,
-                    x: enemySprite.x + 3,
-                    duration: 50,
-                    yoyo: true,
-                    repeat: 10
-                });
+                const doShake = (count) => {
+                    if (count >= result.shakes) return;
 
-                this.time.delayedCall(250, () => enemySprite.clearTint());
+                    this.tweens.add({
+                        targets: enemySprite,
+                        x: enemySprite.x + (3 + result.shakes * 2), // intensidade cresce com shakes
+                        duration: 80 - result.shakes * 10,           // mais forte = mais rápido
+                        yoyo: true,
+                        onComplete: () => {
+                            doShake(count + 1);
+                        }
+                    });
+                };
+
+                doShake(0);
+
+                this.time.delayedCall(350, () => enemySprite.clearTint());
 
                 // --------------------------
                 // 4. resultado final
                 // --------------------------
-                this.time.delayedCall(600, () => {
+                this.time.delayedCall(850, () => {
 
                     if (result.success) {
 
-                        // ✨ criatura entra na runa (IMPORTANTE)
+                        // ✨ criatura entra na runa
                         this.tweens.add({
                             targets: enemySprite,
                             scale: 0,
                             alpha: 0,
-                            duration: 300,
+                            duration: 380,
                             ease: 'Back.In'
                         });
 
-                        // 🌟 runa “absorve energia”
+                        // 🌟 runa absorve energia
                         this.tweens.add({
                             targets: rune,
                             scale: 1.5,
-                            duration: 200,
+                            duration: 260,
                             yoyo: true,
                             repeat: 1,
                             onComplete: () => {
@@ -365,14 +341,11 @@ class BattleScene extends Phaser.Scene {
                                     x: CONST.GAME_WIDTH / 2,
                                     y: CONST.GAME_HEIGHT - 80,
                                     scale: 0.7,
-                                    duration: 350,
+                                    duration: 500,
                                     ease: 'Power2',
                                     onComplete: () => {
 
                                         rune.destroy();
-                                        rays.forEach(r => r.destroy());
-                                        shake.stop();
-
                                         callback();
                                     }
                                 });
@@ -381,17 +354,15 @@ class BattleScene extends Phaser.Scene {
 
                     } else {
 
-                        // 💥 falha: runa quebra
+                        // 💥 falha
                         this.tweens.add({
                             targets: rune,
                             angle: 180,
                             alpha: 0,
                             scale: 0.3,
-                            duration: 250,
+                            duration: 350,
                             onComplete: () => {
                                 rune.destroy();
-                                rays.forEach(r => r.destroy());
-                                shake.stop();
                                 callback();
                             }
                         });
