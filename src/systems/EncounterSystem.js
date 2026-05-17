@@ -44,16 +44,8 @@ class EncounterSystem {
         if (Helpers.chance(0.02)) genetics = 4;
         if (Helpers.chance(0.005)) genetics = 5;
 
-        // Cria criatura
+        // Cria criatura (shiny definido automaticamente pelo construtor se genetics === 5)
         const creature = new Creature(selectedId, level, genetics);
-
-        // Shiny check
-        const template = CreaturesDB[selectedId];
-        if (template && Helpers.chance(template.shinyChance)) {
-            creature.isShiny = true;
-            creature.spriteColor = template.spriteShinyColor;
-            creature.genetics = Math.max(creature.genetics, 4); // Shiny tem pelo menos 4 estrelas
-        }
 
         return creature;
     }

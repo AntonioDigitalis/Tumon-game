@@ -498,9 +498,17 @@ class WorldScene extends Phaser.Scene {
                 this.dialog.show(npcData.dialog);
                 break;
             case 'healer':
-                this.playerData.healAll();
-                this.dialog.show(npcData.dialog, () => {
-                    this.hud.showNotification('♥ Time curado!', '#2ecc71');
+                this.dialog.show(['Bem-vindo ao Centro de Recuperação! O que deseja?'], () => {
+                    this.dialog.showChoice('Serviços da Curandeira Aria:', ['Curar criaturas', 'Mover criaturas', 'Sair'], (choice) => {
+                        if (choice === 0) {
+                            this.playerData.healAll();
+                            this.dialog.show(['Pronto! Suas criaturas estão completamente curadas!'], () => {
+                                this.hud.showNotification('♥ Time curado!', '#2ecc71');
+                            });
+                        } else if (choice === 1) {
+                            this._openStorageUI();
+                        }
+                    });
                 });
                 break;
             case 'bank':
@@ -557,6 +565,20 @@ class WorldScene extends Phaser.Scene {
             this.hud.showNotification(`${amount} ouro sacado!`, '#2ecc71');
             this.hud.update(this.playerData, this.currentMap.name);
         });
+    }
+
+    _openStorageUI() {
+        this.inputLocked = true;
+        this.scene.launch('StorageScene', {
+            playerData: this.playerData,
+            onClose: () => {
+                this.scene.resume();
+                this.inputLocked = false;
+                this.hud.update(this.playerData, this.currentMap.name);
+                this.saveGame();
+            }
+        });
+        this.scene.pause();
     }
 
     handleTrainerNPC(npcData) {
