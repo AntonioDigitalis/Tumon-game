@@ -135,7 +135,10 @@ class WorldScene extends Phaser.Scene {
             6: 'tile_grass',
             7: 'tile_building',
             8: 'tile_sand',
-            9: 'tile_rock'
+            9: 'tile_rock',
+            10: 'tile_house',
+            11: 'tile_heal',
+            12: 'tile_shop'
         };
 
         for (let y = 0; y < this.currentMap.height; y++) {
@@ -159,6 +162,168 @@ class WorldScene extends Phaser.Scene {
                 }
             });
         }
+
+        this._addBuildingDetails();
+        this._addBuildingSigns();
+    }
+
+    _addBuildingDetails() {
+        if (this.currentMap.id !== 'town') return;
+        const ts = CONST.TILE_SIZE;
+        const g = this.add.graphics().setDepth(50);
+        this.mapTiles.push(g);
+
+        // Helper: janela com 4 vidraças
+        const drawWindow = (wx, wy, ww, wh) => {
+            const hw = Math.floor(ww / 2) - 1;
+            const hh = Math.floor(wh / 2) - 1;
+            g.fillStyle(0x2a3a5a, 1);
+            g.fillRect(wx - 1, wy - 1, ww + 2, wh + 2);
+            g.fillStyle(0x4878a8, 1);
+            g.fillRect(wx,          wy,          hw, hh);
+            g.fillRect(wx + hw + 2, wy,          hw, hh);
+            g.fillRect(wx,          wy + hh + 2, hw, hh);
+            g.fillRect(wx + hw + 2, wy + hh + 2, hw, hh);
+            g.fillStyle(0xc8e4ff, 0.35);
+            g.fillRect(wx, wy, Math.floor(hw * 0.5), Math.floor(hh * 0.5));
+            g.fillRect(wx + hw + 2, wy, Math.floor(hw * 0.5), Math.floor(hh * 0.5));
+        };
+
+        // Helper: porta de madeira com janelinha e maçaneta
+        const drawWoodDoor = (cx, bottomY, dw, dh) => {
+            const dx = cx - Math.floor(dw / 2);
+            g.fillStyle(0x2a0e00, 1);                        // frame escuro
+            g.fillRect(dx - 2, bottomY - dh, dw + 4, dh);
+            g.fillStyle(0x7a3820, 1);                        // painel madeira
+            g.fillRect(dx, bottomY - dh + 1, dw, dh - 1);
+            g.fillStyle(0x90b8d0, 0.75);                     // janelinha superior
+            g.fillRect(dx + 2, bottomY - dh + 3, dw - 4, Math.floor(dh * 0.35));
+            g.fillStyle(0xc8a000, 1);                        // maçaneta
+            g.fillRect(dx + dw - 4, bottomY - Math.floor(dh * 0.45), 2, 4);
+        };
+
+        // Helper: porta de vidro dupla com alças centrais
+        const drawGlassDoor = (cx, bottomY, dw, dh) => {
+            const dx = cx - Math.floor(dw / 2);
+            const pw = Math.floor(dw / 2) - 1;              // largura de cada painel
+            g.fillStyle(0x1a3060, 1);                        // frame azul escuro
+            g.fillRect(dx - 2, bottomY - dh, dw + 4, dh);
+            g.fillStyle(0x70c8e8, 0.65);                     // vidro esq
+            g.fillRect(dx, bottomY - dh + 1, pw, dh - 1);
+            g.fillStyle(0x70c8e8, 0.65);                     // vidro dir
+            g.fillRect(dx + pw + 2, bottomY - dh + 1, pw, dh - 1);
+            g.fillStyle(0xffffff, 0.28);                     // reflexo esq
+            g.fillRect(dx + 2, bottomY - dh + 2, 3, dh - 5);
+            g.fillStyle(0xffffff, 0.28);                     // reflexo dir
+            g.fillRect(dx + pw + 4, bottomY - dh + 2, 3, dh - 5);
+            g.fillStyle(0xd0dce8, 1);                        // alças centrais
+            const handleY = bottomY - Math.floor(dh * 0.5);
+            g.fillRect(dx + pw - 2, handleY, 2, 6);
+            g.fillRect(dx + pw + 2, handleY, 2, 6);
+        };
+
+        // ── CASA: tiles x=2..4, y=2..3 — entry tile x=3 ──
+        {
+            const bx = 2 * ts, by = 2 * ts, bw = 3 * ts, bh = 2 * ts;
+
+            g.fillStyle(0x5a2010, 1);
+            g.fillRect(bx, by, bw, 9);
+            g.fillStyle(0x7a3820, 0.6);
+            g.fillRect(bx, by, bw, 3);
+
+            const ww = 20, wh = 16, wy = by + 15;
+            drawWindow(bx + 6,           wy, ww, wh);
+            drawWindow(bx + bw - 6 - ww, wy, ww, wh);
+
+            // Porta centrada no tile x=3
+            drawWoodDoor(3 * ts + ts / 2, by + bh, 16, 22);
+        }
+
+        // ── CENTRO DE CURA: tiles x=18..21, y=2..3 — entry tile x=20 ──
+        {
+            const bx = 18 * ts, by = 2 * ts, bw = 4 * ts, bh = 2 * ts;
+            const cx = bx + Math.floor(bw / 2);
+            const cy = by + 18;                              // no terço superior
+
+            // Cruz menor, só no topo do prédio
+            g.fillStyle(0xcc1818, 1);
+            g.fillRect(cx - 3, cy - 10, 6, 20);             // braço vertical
+            g.fillRect(cx - 10, cy - 3, 20, 6);             // braço horizontal
+            g.fillStyle(0xff9090, 0.35);
+            g.fillRect(cx - 1, cy - 8, 3, 16);
+            g.fillRect(cx - 8, cy - 1, 16, 3);
+
+            // Porta de vidro dupla centrada no tile x=20
+            drawGlassDoor(20 * ts + ts / 2, by + bh, 24, 22);
+        }
+
+        // ── MERCADO: tiles x=9..13, y=6..7 — entry tile x=11 ──
+        {
+            const bx = 9 * ts, by = 6 * ts, bw = 5 * ts, bh = 2 * ts;
+
+            g.fillStyle(0xd09010, 1);
+            g.fillRect(bx, by, bw, 13);
+            g.fillStyle(0x000000, 0.14);
+            for (let x = bx; x < bx + bw; x += 7) g.fillRect(x, by, 3, 13);
+            g.fillStyle(0xfff0a0, 0.28);
+            g.fillRect(bx, by, bw, 2);
+            g.fillStyle(0x000000, 0.28);
+            g.fillRect(bx, by + 13, bw, 3);
+
+            const ww = 30, wh = 22, wy = by + 22;
+            drawWindow(bx + 12,           wy, ww, wh);
+            drawWindow(bx + bw - 12 - ww, wy, ww, wh);
+
+            // Porta centrada no tile x=11
+            drawWoodDoor(11 * ts + ts / 2, by + bh, 16, 22);
+        }
+    }
+
+    _addBuildingSigns() {
+        if (this.currentMap.id !== 'town') return;
+        const ts = CONST.TILE_SIZE;
+
+        // Posição: centro horizontal do prédio × linha logo acima do topo
+        const signs = [
+            {
+                // Casa: tiles x=2..4 (centro=3), topo y=2 → placa em y=1
+                worldX: 3 * ts + ts / 2,
+                worldY: 1 * ts + ts / 2,
+                text: 'CASA',
+                color: '#ffd0a0',
+                bg: '#5a2808'
+            },
+            {
+                // Cura: tiles x=18..21 (centro=19.5), topo y=2 → placa em y=1
+                worldX: (18 + 21) / 2 * ts + ts / 2,
+                worldY: 1 * ts + ts / 2,
+                text: 'CURA',
+                color: '#b8e8f8',
+                bg: '#0a3050'
+            },
+            {
+                // Mercado: tiles x=9..13 (centro=11), topo y=6 → placa em y=5
+                worldX: 11 * ts + ts / 2,
+                worldY: 5 * ts + ts / 2,
+                text: 'MERCADO',
+                color: '#ffe870',
+                bg: '#4a2800'
+            }
+        ];
+
+        signs.forEach(({ worldX, worldY, text, color, bg }) => {
+            const sign = this.add.text(worldX, worldY, text, {
+                fontFamily: 'Courier New',
+                fontSize: '8px',
+                color,
+                stroke: '#000000',
+                strokeThickness: 3,
+                backgroundColor: bg,
+                padding: { x: 4, y: 3 }
+            }).setOrigin(0.5).setDepth(80);
+
+            this.mapTiles.push(sign);
+        });
     }
 
     createPlayer() {
@@ -322,7 +487,7 @@ class WorldScene extends Phaser.Scene {
         if (newX < 0 || newX >= this.currentMap.width || newY < 0 || newY >= this.currentMap.height) return;
 
         const tileId = this.currentMap.tiles[newY * this.currentMap.width + newX];
-        const blocked = [1, 3, 7, 9];
+        const blocked = [1, 3, 7, 9, 10, 11, 12];
         if (blocked.includes(tileId)) return;
 
         for (const [npcId, npc] of Object.entries(this.npcSprites)) {
@@ -410,26 +575,15 @@ class WorldScene extends Phaser.Scene {
     handleDoorInteraction(target) {
         switch (target) {
             case 'player_house':
-                this.dialog.show([
-                    'Sua casa. Tudo está como você deixou.',
-                    'Que boas memórias...'
-                ], () => { this.inputLocked = false; });
+                this.transitionToMap('player_house', { x: 5, y: 8 });
                 break;
 
             case 'heal_center':
-                this.playerData.healAll();
-                this.dialog.show([
-                    '♥ Suas criaturas foram completamente curadas!',
-                    'Boa sorte nas suas aventuras!'
-                ], () => {
-                    this.hud.showNotification('♥ Time curado!', '#2ecc71');
-                    this.inputLocked = false;
-                });
+                this.transitionToMap('heal_center', { x: 6, y: 8 });
                 break;
 
             case 'shop':
-                this.inputLocked = false;
-                this.openShop();
+                this.transitionToMap('shop', { x: 6, y: 8 });
                 break;
 
             case 'leader_fire':

@@ -26,12 +26,12 @@ const MapsDB = {
         tiles: [
             1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
             1,0,0,0,0,0,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,1,
-            1,0,7,7,7,0,4,0,0,0,0,0,0,0,0,0,4,0,7,7,7,7,0,0,1,
-            1,0,7,7,7,0,4,0,0,0,0,0,0,0,0,0,4,0,7,7,7,7,0,0,1,
+            1,0,10,10,10,0,4,0,0,0,0,0,0,0,0,0,4,0,11,11,11,11,0,0,1,
+            1,0,10,10,10,0,4,0,0,0,0,0,0,0,0,0,4,0,11,11,11,11,0,0,1,
             1,0,0,5,0,0,4,0,0,0,0,0,0,0,0,0,4,0,0,0,5,0,0,0,1,
             1,0,0,4,4,4,4,0,0,0,0,0,0,0,0,0,4,4,4,4,4,0,0,0,1,
-            1,0,0,0,0,0,4,0,0,7,7,7,7,7,0,0,4,0,0,0,0,0,0,0,1,
-            1,0,0,0,0,0,4,0,0,7,7,7,7,7,0,0,4,0,0,0,0,0,0,0,1,
+            1,0,0,0,0,0,4,0,0,12,12,12,12,12,0,0,4,0,0,0,0,0,0,0,1,
+            1,0,0,0,0,0,4,0,0,12,12,12,12,12,0,0,4,0,0,0,0,0,0,0,1,
             1,0,0,0,0,0,4,0,0,0,0,5,0,0,0,0,4,0,0,0,0,0,0,0,1,
             1,0,0,0,0,0,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,1,
             1,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
@@ -51,7 +51,118 @@ const MapsDB = {
             { x: 11, y: 8, target: 'shop', type: 'door' },
             { x: 12, y: 18, target: 'route1', targetSpawn: { x: 12, y: 1 }, type: 'map' }
         ],
-        npcs: ['mom_npc', 'healer_npc', 'shop_npc', 'guide_npc']
+        npcs: ['guide_npc']
+    },
+
+    player_house: {
+        id: 'player_house',
+        name: 'Casa da Mãe',
+        width: 12,
+        height: 10,
+        playerSpawn: { x: 5, y: 8 },
+        music: null,
+        encounters: false,
+        backgroundColor: 0x2e1c0e,
+        tiles: [
+            // y=0: paredes externas
+            1,1,1,1,1,1,1,1,1,1,1,1,
+            // y=1: cama (x=1-3), estante/guarda-roupa (x=8-10)
+            1,7,7,7,4,4,4,4,7,7,7,1,
+            // y=2: cama cont., canto da estante
+            1,7,7,7,4,4,4,4,4,4,7,1,
+            // y=3: mesa de jantar (x=5-6)
+            1,4,4,4,4,7,7,4,4,4,4,1,
+            // y=4: mesa cont.
+            1,4,4,4,4,7,7,4,4,4,4,1,
+            // y=5: sala/corredor aberto — Mãe NPC em x=7
+            1,4,4,4,4,4,4,4,4,4,4,1,
+            // y=6: balcão da cozinha (x=1-3)
+            1,7,7,7,4,4,4,4,4,4,4,1,
+            // y=7: cozinha cont.
+            1,7,4,4,4,4,4,4,4,4,4,1,
+            // y=8: chão da entrada
+            1,4,4,4,4,4,4,4,4,4,4,1,
+            // y=9: porta de saída em x=5
+            1,1,1,1,1,5,1,1,1,1,1,1
+        ],
+        transitions: [
+            { x: 5, y: 9, target: 'town', targetSpawn: { x: 3, y: 5 }, type: 'map' }
+        ],
+        npcs: ['mom_npc']
+    },
+
+    heal_center: {
+        id: 'heal_center',
+        name: 'Centro de Cura',
+        width: 14,
+        height: 10,
+        playerSpawn: { x: 6, y: 8 },
+        music: null,
+        encounters: false,
+        backgroundColor: 0x1a2436,
+        tiles: [
+            // y=0: paredes
+            1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+            // y=1: armários/equipamentos médicos laterais, centro aberto
+            1,7,7,4,4,4,4,4,4,4,4,4,7,1,
+            // y=2: balcão de atendimento (tudo bloqueado)
+            1,7,7,7,7,7,7,7,7,7,7,7,7,1,
+            // y=3: área da curandeira — Curandeira NPC em x=7
+            1,4,4,4,4,4,4,4,4,4,4,4,4,1,
+            // y=4: chão público
+            1,4,4,4,4,4,4,4,4,4,4,4,4,1,
+            // y=5: chão aberto
+            1,4,4,4,4,4,4,4,4,4,4,4,4,1,
+            // y=6: bancos de espera (x=2-3, x=9-10)
+            1,4,7,7,4,4,4,4,4,4,7,7,4,1,
+            // y=7: bancos cont.
+            1,4,7,7,4,4,4,4,4,4,7,7,4,1,
+            // y=8: chão da entrada
+            1,4,4,4,4,4,4,4,4,4,4,4,4,1,
+            // y=9: porta de saída em x=6
+            1,1,1,1,1,1,5,1,1,1,1,1,1,1
+        ],
+        transitions: [
+            { x: 6, y: 9, target: 'town', targetSpawn: { x: 20, y: 5 }, type: 'map' }
+        ],
+        npcs: ['healer_npc']
+    },
+
+    shop: {
+        id: 'shop',
+        name: 'Mercado do Rion',
+        width: 14,
+        height: 10,
+        playerSpawn: { x: 6, y: 8 },
+        music: null,
+        encounters: false,
+        backgroundColor: 0x1e1a10,
+        tiles: [
+            // y=0: paredes
+            1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+            // y=1: prateleiras do fundo (tudo bloqueado)
+            1,7,7,7,7,7,7,7,7,7,7,7,7,1,
+            // y=2: balcão de caixa (tudo bloqueado)
+            1,7,7,7,7,7,7,7,7,7,7,7,7,1,
+            // y=3: área do mercador — Mercador NPC em x=7
+            1,4,4,4,4,4,4,4,4,4,4,4,4,1,
+            // y=4: chão público
+            1,4,4,4,4,4,4,4,4,4,4,4,4,1,
+            // y=5: chão aberto
+            1,4,4,4,4,4,4,4,4,4,4,4,4,1,
+            // y=6: expositores/vitrines (x=2-3, x=9-10)
+            1,4,7,7,4,4,4,4,4,4,7,7,4,1,
+            // y=7: expositores cont.
+            1,4,7,7,4,4,4,4,4,4,7,7,4,1,
+            // y=8: chão da entrada
+            1,4,4,4,4,4,4,4,4,4,4,4,4,1,
+            // y=9: porta de saída em x=6
+            1,1,1,1,1,1,5,1,1,1,1,1,1,1
+        ],
+        transitions: [
+            { x: 6, y: 9, target: 'town', targetSpawn: { x: 11, y: 9 }, type: 'map' }
+        ],
+        npcs: ['shop_npc']
     },
 
     route1: {

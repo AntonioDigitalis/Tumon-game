@@ -6,9 +6,9 @@ const NPCsDB = {
     mom_npc: {
         id: 'mom_npc',
         name: 'Mãe',
-        mapId: 'town',
-        x: 5,
-        y: 12,
+        mapId: 'player_house',
+        x: 7,
+        y: 5,
         color: 0xff69b4,
         dialog: [
             'Olá querido! Que bom te ver.',
@@ -21,13 +21,13 @@ const NPCsDB = {
     healer_npc: {
         id: 'healer_npc',
         name: 'Curandeira Aria',
-        mapId: 'town',
-        x: 20,
-        y: 11,
+        mapId: 'heal_center',
+        x: 7,
+        y: 3,
         color: 0xff6b9d,
         dialog: [
-            'Bem-vindo ao Centro de Recuperação!',
-            'Vou curar todas as suas criaturas.',
+            'Bem-vindo ao Centro de Cura!',
+            'Vou cuidar das suas criaturas.',
             'Pronto! Suas criaturas estão saudáveis!'
         ],
         type: 'healer',
@@ -36,17 +36,17 @@ const NPCsDB = {
     shop_npc: {
         id: 'shop_npc',
         name: 'Mercador Rion',
-        mapId: 'town',
-        x: 16,
-        y: 13,
+        mapId: 'shop',
+        x: 7,
+        y: 3,
         color: 0x2ecc71,
         dialog: [
-            'Bem-vindo à minha loja!',
+            'Bem-vindo ao meu mercado!',
             'Temos runas, poções e mais!',
             'Volte sempre!'
         ],
         type: 'shop',
-        direction: 'left'
+        direction: 'down'
     },
     guide_npc: {
         id: 'guide_npc',

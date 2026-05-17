@@ -104,8 +104,13 @@ this.load.image('normousse_shiny', 'assets/sprites/normousse_shiny.png');
         // NPC marker
         this.createColorTexture('tile_npc', ts, ts, 0x4a8c3f);
 
-        // Casa/Prédio
+        // Casa/Prédio genérico
         this.createColorTexture('tile_building', ts, ts, 0x7f4a2b);
+
+        // Fachadas específicas da Vila Aurora
+        this.createHouseFacade('tile_house', ts, ts);
+        this.createHealFacade('tile_heal', ts, ts);
+        this.createShopFacade('tile_shop', ts, ts);
 
         // Areia (caverna)
         this.createColorTexture('tile_sand', ts, ts, 0x3d3124);
@@ -618,6 +623,45 @@ this.load.image('normousse_shiny', 'assets/sprites/normousse_shiny.png');
         ctx.strokeRect(Math.round(w*0.26), Math.round(h*0.14), Math.round(w*0.48), Math.round(h*0.24));
         ctx.strokeRect(Math.round(w*0.22), Math.round(h*0.42), Math.round(w*0.56), Math.round(h*0.26));
 
+        canvas.refresh();
+    }
+
+    createHouseFacade(key, w, h) {
+        const canvas = this.textures.createCanvas(key, w, h);
+        const ctx = canvas.getContext();
+        // Terracota lisa — detalhes desenhados por overlay no WorldScene
+        ctx.fillStyle = '#c87050';
+        ctx.fillRect(0, 0, w, h);
+        // Ripas horizontais sutis
+        ctx.fillStyle = 'rgba(0,0,0,0.10)';
+        for (let y = 5; y < h; y += 6) ctx.fillRect(0, y, w, 1);
+        ctx.fillStyle = 'rgba(255,200,150,0.10)';
+        for (let y = 2; y < h; y += 6) ctx.fillRect(0, y, w, 3);
+        canvas.refresh();
+    }
+
+    createHealFacade(key, w, h) {
+        const canvas = this.textures.createCanvas(key, w, h);
+        const ctx = canvas.getContext();
+        // Azul clínico liso — detalhes desenhados por overlay no WorldScene
+        ctx.fillStyle = '#b0cede';
+        ctx.fillRect(0, 0, w, h);
+        // Juntas de azulejo muito sutis
+        ctx.fillStyle = 'rgba(60,110,140,0.15)';
+        for (let y = 8; y < h; y += 8) ctx.fillRect(0, y, w, 1);
+        for (let x = 8; x < w; x += 8) ctx.fillRect(x, 0, 1, h);
+        canvas.refresh();
+    }
+
+    createShopFacade(key, w, h) {
+        const canvas = this.textures.createCanvas(key, w, h);
+        const ctx = canvas.getContext();
+        // Âmbar/madeira liso — detalhes desenhados por overlay no WorldScene
+        ctx.fillStyle = '#a87020';
+        ctx.fillRect(0, 0, w, h);
+        // Veio vertical sutil
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        for (let x = 0; x < w; x += 4) ctx.fillRect(x, 0, 1, h);
         canvas.refresh();
     }
 
