@@ -134,10 +134,9 @@ class InventoryScene extends Phaser.Scene {
                 }
             });
 
-            const procKey = `proc_${creature.templateId}${creature.isShiny ? '_shiny' : ''}`;
-            const sprite = this.textures.exists(procKey)
-                ? this.add.image(30, cy + 30, procKey).setDisplaySize(48, 48)
-                : this.add.rectangle(30, cy + 30, 40, 40, creature.spriteColor).setStrokeStyle(1, 0xffffff);
+            // SPRITE
+            const spriteKeyRaw = creature.isShiny ? creature.spriteShinyKey : creature.spriteKey;
+            const sprite = this.add.image(40, cy+30, getSpriteKey(this, spriteKeyRaw)).setDisplaySize(32, 32);
 
             const shiny = creature.isShiny ? '✨' : '';
             const nameText = this.add.text(60, cy + 8,
