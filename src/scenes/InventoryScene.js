@@ -135,8 +135,7 @@ class InventoryScene extends Phaser.Scene {
             });
 
             // SPRITE
-            const spriteKeyRaw = creature.isShiny ? creature.spriteShinyKey : creature.spriteKey;
-            const sprite = this.add.image(40, cy+30, getSpriteKey(this, spriteKeyRaw)).setDisplaySize(32, 32);
+            const sprite = this.add.image(40, cy+30, getSpriteKey(this, creature.spriteKey)).setDisplaySize(32, 32);
 
             const shiny = creature.isShiny ? '✨' : '';
             const nameText = this.add.text(60, cy + 8,
@@ -242,8 +241,7 @@ class InventoryScene extends Phaser.Scene {
         let y = -170;
 
         // SPRITE
-        const spriteKeyRaw = creature.isShiny ? creature.spriteShinyKey : creature.spriteKey;
-        const sprite = this.add.image(0, y, getSpriteKey(this, spriteKeyRaw)).setDisplaySize(96, 96);
+        const sprite = this.add.image(0, y, getSpriteKey(this, creature.spriteKey)).setDisplaySize(96, 96);
         overlay.add(sprite);
 
         y += 60;

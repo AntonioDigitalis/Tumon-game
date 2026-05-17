@@ -33,7 +33,7 @@ class BootScene extends Phaser.Scene {
         });
 
         this.load.on('loaderror', (file) => {
-            Log.error('Erro ao carregar asset: ${file.key}');
+            Log.error(`Erro ao carregar asset: ${file.key}`);
         });
 
         this.load.image('title_bg', 'assets/title_bg.png');
@@ -91,6 +91,9 @@ class BootScene extends Phaser.Scene {
 
         // Pedra (caverna)
         this.createColorTexture('tile_rock', ts, ts, 0x2a2a2a);
+
+        // Fallback para sprites não encontrados
+        this.createColorTexture('asset_missing', ts, ts, 0xff00ff);
 
         // Player (sprite sheet: 9 frames — 3 dirs × 3 walk states)
         this.createPlayerSpriteSheet('playerSheet', ts, Math.round(ts * 1.2));

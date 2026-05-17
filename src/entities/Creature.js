@@ -167,6 +167,18 @@ class Creature {
         creature.status = data.status || null;
         creature.statusTurns = data.statusTurns || 0;
 
+        // Reconstrói spriteKey — saves antigos podem não ter este campo
+        if (!creature.spriteKey) {
+            const tmpl = CreaturesDB[creature.templateId];
+            if (tmpl) {
+                creature.spriteKey = (creature.isShiny && tmpl.spriteShinyKey)
+                    ? tmpl.spriteShinyKey
+                    : (tmpl.spriteKey || creature.templateId);
+            } else {
+                creature.spriteKey = creature.templateId || 'embrill';
+            }
+        }
+
         // Reconstrói currentPP — garante retrocompatibilidade com saves antigos
         creature.currentPP = {};
         (creature.moves || []).forEach(moveId => {

@@ -23,15 +23,13 @@ function ensureProceduralFallback(scene, creatureKey) {
 }
 
 function safeImageLoadWithFallback(scene, key, path) {
-
-    if (!scene.__missingAssets) {
-        scene.__missingAssets = new Set();
-    }
-
+    // Guarda no game (compartilhado entre cenas) para que getSpriteKey
+    // em qualquer cena saiba quais PNGs falharam
     scene.load.image(key, path);
 
     scene.load.on('loaderror', (file) => {
-        scene.__missingAssets.add(file.key);
+        if (!scene.game.__missingAssets) scene.game.__missingAssets = new Set();
+        scene.game.__missingAssets.add(file.key);
     });
 }
 
@@ -73,23 +71,25 @@ const SpriteAssetLoader = {
 };
 
 function getSpriteKey(scene, key) {
-    if (scene.textures.exists(key)) return key;
+    if (!key) return 'asset_missing';
 
-    const creature = CreaturesDB[key];
-    if (!creature) return 'asset_missing';
-
+    // Prefere sempre o sprite procedural — os PNGs externos têm dimensões
+    // inconsistentes que causam falhas silenciosas no WebGL
     const procKey = `proc_${key}`;
+    if (scene.textures.exists(procKey)) return procKey;
 
-    if (!scene.textures.exists(procKey)) {
-        CreatureSprites._draw(
-            scene,
-            procKey,
-            creature.element,
-            creature.variant || 0,
-            creature.bodyColor || 0x888888,
-            creature.eyeColor || 0xffffff
-        );
-    }
+    // Gera procedural sob demanda (shiny usa dados da forma base)
+    const template = CreaturesDB[key] || CreaturesDB[key.replace(/_shiny$/, '')];
+    if (!template) return 'asset_missing';
+
+    CreatureSprites._draw(
+        scene,
+        procKey,
+        template.element,
+        template.variant || 0,
+        template.spriteColor || 0x888888,
+        template.eyeColor    || 0xffffff
+    );
 
     return procKey;
 }
