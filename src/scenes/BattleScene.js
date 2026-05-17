@@ -197,45 +197,51 @@ class BattleScene extends Phaser.Scene {
             return;
         }
 
-        // Procura runa no inventário
-        const runeTypes = ['rune_rare', 'rune_advanced', 'rune_common'];
-        let runeId = null;
-        for (const r of runeTypes) {
-            if (this.playerData.hasItem(r)) {
-                runeId = r;
-                break;
-            }
-        }
+        const availableRunes = Object.values(ItemsDB)
+            .filter(item => item.type === 'rune' && this.playerData.hasItem(item.id))
+            .sort((a, b) => (a.captureRate || 0) - (b.captureRate || 0)); // fraca → forte
 
-        // Use a mais fraca primeiro
-        const runeOrder = ['rune_common', 'rune_advanced', 'rune_rare'];
-        runeId = null;
-        for (const r of runeOrder) {
-            if (this.playerData.hasItem(r)) {
-                runeId = r;
-                break;
-            }
-        }
-
-        if (!runeId) {
+        if (availableRunes.length === 0) {
             this.battleUI.setLogText('Sem runas de captura!');
             this.time.delayedCall(1000, () => this.showMainMenu());
             return;
         }
 
+        this.showRuneMenu(availableRunes);
+    }
+
+    showRuneMenu(runes) {
+        this.battleUI.setLogText('Escolha a runa de captura:');
+
+        this.battleUI.showGenericMenu(
+            runes.map(rune => {
+                return {
+                    label: rune.name,
+                    description: `Chance base: ${Math.round((rune.captureRate || 0) * 100)}%`,
+                    onSelect: () => this.useRune(rune.id)
+                };
+            }),
+            () => this.showMainMenu()
+        );
+    }
+
+    useRune(runeId) {
+        if (this.processingTurn) return;
         this.processingTurn = true;
+
         this.playerData.useItem(runeId);
 
         const captureResult = CaptureSystem.attemptCapture(
-            this.enemyCreature, runeId, this.achievementBonuses.captureRate || 0
+            this.enemyCreature,
+            runeId,
+            this.achievementBonuses.captureRate || 0
         );
 
-        // Animação de captura
         this.animateCapture(captureResult, () => {
             if (captureResult.success) {
-                this.battleUI.setLogText(`${this.enemyCreature.name} foi capturado! (${captureResult.chance}% chance)`);
+                this.battleUI.setLogText(`${this.enemyCreature.name} foi capturado!`);
                 this.battleActive = false;
-                
+
                 this.time.delayedCall(1500, () => {
                     this.endBattle({
                         won: true,
@@ -245,8 +251,7 @@ class BattleScene extends Phaser.Scene {
                     });
                 });
             } else {
-                this.battleUI.setLogText(`A captura falhou! (${captureResult.chance}% chance)`);
-                // Enemy turn
+                this.battleUI.setLogText(`A captura falhou!`);
                 this.processEnemyTurn();
             }
         });
@@ -256,51 +261,113 @@ class BattleScene extends Phaser.Scene {
         const enemySprite = this.battleUI.elements.enemySprite;
         if (!enemySprite) { callback(); return; }
 
-        const rune = this.add.circle(CONST.GAME_WIDTH / 2, CONST.GAME_HEIGHT / 2, 12,
-            ItemsDB[result.runeUsed]?.color || 0xffffff);
-        rune.setStrokeStyle(2, 0x000000);
+        const rune = this.add.image(
+            CONST.GAME_WIDTH / 2,
+            CONST.GAME_HEIGHT / 2,
+            ItemsDB[result.runeUsed]?.icon || 'asset_missing'
+        );
 
-        // Throw animation
+        rune.setScale(1.1);
+        rune.setDepth(1000);
+
+        const runeColor = ItemsDB[result.runeUsed]?.color || 0xffffff;
+
+        const hoverX = enemySprite.x;
+        const hoverY = enemySprite.y - 60;
+
+        // --------------------------
+        // 1. runa vai até o hover
+        // --------------------------
         this.tweens.add({
             targets: rune,
-            x: enemySprite.x,
-            y: enemySprite.y,
-            duration: 500,
+            x: hoverX,
+            y: hoverY,
+            duration: 650,
             ease: 'Power2',
+
             onComplete: () => {
-                // Shakes
-                let shakeCount = 0;
-                const doShake = () => {
-                    if (shakeCount >= result.shakes) {
-                        rune.destroy();
-                        callback();
-                        return;
-                    }
-                    shakeCount++;
+
+                // --------------------------
+                // 2. reação da criatura
+                // --------------------------
+                enemySprite.setTint(runeColor);
+
+                const doShake = (count) => {
+                    if (count >= result.shakes) return;
+
                     this.tweens.add({
-                        targets: rune,
-                        x: rune.x + 10,
-                        duration: 150,
+                        targets: enemySprite,
+                        x: enemySprite.x + (3 + result.shakes * 2), // intensidade cresce com shakes
+                        duration: 80 - result.shakes * 10,           // mais forte = mais rápido
                         yoyo: true,
-                        repeat: 1,
                         onComplete: () => {
-                            this.time.delayedCall(300, doShake);
+                            doShake(count + 1);
                         }
                     });
                 };
 
-                // Shrink enemy
-                if (result.success) {
-                    this.tweens.add({
-                        targets: enemySprite,
-                        scaleX: 0,
-                        scaleY: 0,
-                        duration: 300,
-                        onComplete: doShake
-                    });
-                } else {
-                    doShake();
-                }
+                doShake(0);
+
+                this.time.delayedCall(350, () => enemySprite.clearTint());
+
+                // --------------------------
+                // 4. resultado final
+                // --------------------------
+                this.time.delayedCall(850, () => {
+
+                    if (result.success) {
+
+                        // ✨ criatura entra na runa
+                        this.tweens.add({
+                            targets: enemySprite,
+                            scale: 0,
+                            alpha: 0,
+                            duration: 380,
+                            ease: 'Back.In'
+                        });
+
+                        // 🌟 runa absorve energia
+                        this.tweens.add({
+                            targets: rune,
+                            scale: 1.5,
+                            duration: 260,
+                            yoyo: true,
+                            repeat: 1,
+                            onComplete: () => {
+
+                                // 🔄 RUNA VOLTA PRO PLAYER
+                                this.tweens.add({
+                                    targets: rune,
+                                    x: CONST.GAME_WIDTH / 2,
+                                    y: CONST.GAME_HEIGHT - 80,
+                                    scale: 0.7,
+                                    duration: 500,
+                                    ease: 'Power2',
+                                    onComplete: () => {
+
+                                        rune.destroy();
+                                        callback();
+                                    }
+                                });
+                            }
+                        });
+
+                    } else {
+
+                        // 💥 falha
+                        this.tweens.add({
+                            targets: rune,
+                            angle: 180,
+                            alpha: 0,
+                            scale: 0.3,
+                            duration: 350,
+                            onComplete: () => {
+                                rune.destroy();
+                                callback();
+                            }
+                        });
+                    }
+                });
             }
         });
     }

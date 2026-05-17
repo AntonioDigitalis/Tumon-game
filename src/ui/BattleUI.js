@@ -126,9 +126,9 @@ class BattleUI {
 
     createCreatureSprite(key, creature, x, y) {
         const size = key === 'player' ? 96 : 80;
-        const sprite = this.scene.add.image(x, y, getSpriteKey(this.scene, creature.spriteKey));
-
-        sprite.setScale(0.3);
+        const size_criature = size * 2;
+        const sprite = this.scene.add.image(x, y, getSpriteKey(this.scene, creature.spriteKey))
+            .setDisplaySize(size_criature, size_criature);
         sprite.setDepth(2);
         
         // Ícone do elemento
@@ -345,6 +345,34 @@ class BattleUI {
     clearActionButtons() {
         this.elements.actionButtons.forEach(btn => btn.destroy());
         this.elements.actionButtons = [];
+    }
+
+    showGenericMenu(items, onBack, cols = 2, btnW = 200, btnH = 44) {
+        this.clearActionButtons();
+
+        this._layoutButtons(items, cols, btnW, btnH, (item, bx, by) => {
+            this.addButton(
+                bx,
+                by,
+                item.label,
+                item.onSelect,
+                item.color || 0x3498db,
+                btnW,
+                btnH
+            );
+        });
+
+        if (onBack) {
+            const menuH = this.elements.actionMenuH;
+            this.addButton(0, menuH / 2 - 22, '← Voltar', onBack, 0x555555, 140, 32);
+        }
+    }
+
+    clearMenu() {
+        if (!this.menuElements) return;
+
+        this.menuElements.forEach(el => el.destroy());
+        this.menuElements = [];
     }
 
     // -------------------------------------------------------

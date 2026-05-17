@@ -171,18 +171,6 @@ git push origin minha-feature
 
 ---
 
-## 📋 O que ainda precisa ser feito
-
-- [ ] Sprites de criaturas (atualmente são retângulos coloridos)
-- [ ] Músicas e efeitos sonoros
-- [ ] Animações de batalha mais elaboradas
-- [ ] Mais mapas e criaturas
-- [ ] Tela de seleção de starter animada
-- [ ] Sistema de comércio entre jogadores
-- [ ] Correção do offset de hitbox dos botões com zoom da câmera
-
----
-
 ## 🛠️ Stack
 
 | Tecnologia | Uso |
