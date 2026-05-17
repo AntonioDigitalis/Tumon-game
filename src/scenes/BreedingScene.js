@@ -112,11 +112,11 @@ class BreedingScene extends Phaser.Scene {
         const where = this.playerData.addCreature(child);
         this.playerData.stats.breeds++;
 
-        const shinyText = child.isShiny ? ' ✨SHINY!' : '';
-        this.statusText.setText(
-            `🎉 ${child.name} nasceu! ${Helpers.geneticStars(child.genetics)}${shinyText} (${where === 'party' ? 'Time' : 'Armazém'})`
-        );
-        this.statusText.setColor('#2ecc71');
+        const shinyText = child.isShiny ? ' SHINY!' : '';
+        const baseMsg = `${child.name} nasceu! ${Helpers.geneticStars(child.genetics)}${shinyText} (${where === 'party' ? 'Time' : 'Armazém'})`;
+        const finalMsg = result.isHybrid ? result.hybridMsg + '\n' + baseMsg : baseMsg;
+        this.statusText.setText(finalMsg);
+        this.statusText.setColor(result.isHybrid ? '#f1c40f' : '#2ecc71');
 
         this.cameras.main.flash(500, 46, 204, 113);
 

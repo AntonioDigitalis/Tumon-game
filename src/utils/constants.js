@@ -81,6 +81,7 @@ const CONST = {
         common: '#bdc3c7',
         uncommon: '#2ecc71',
         rare: '#3498db',
-        legendary: '#f1c40f'
+        legendary: '#f1c40f',
+        starter: '#e8a020'
     }
 };

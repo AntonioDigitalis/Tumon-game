@@ -17,19 +17,49 @@ class BreedingSystem {
     /**
      * Gera filhote
      */
+    static _isStarter(creature) {
+        return CreaturesDB[creature.templateId]?.rarity === 'starter';
+    }
+
     static breed(creature1, creature2) {
         const check = this.canBreed(creature1, creature2);
         if (!check.can) return { success: false, reason: check.reason };
 
+        // Verifica se pais são criaturas iniciais
+        const p1Starter = this._isStarter(creature1);
+        const p2Starter = this._isStarter(creature2);
+        const starterIds = Object.keys(CreaturesDB).filter(id => CreaturesDB[id].rarity === 'starter');
+
+        // Probabilidade de filhote ser um híbrido inicial
+        const hybridChance = (p1Starter && p2Starter) ? 0.25 : (p1Starter || p2Starter) ? 0.005 : 0;
+
+        if (starterIds.length > 0 && Helpers.chance(hybridChance)) {
+            // Filhote é um inicial aleatório (híbrido genético raro)
+            const hybridId = Helpers.randomPick(starterIds);
+            const avgGenetics = (creature1.genetics + creature2.genetics) / 2;
+            const childGenetics = Helpers.clamp(Math.round(avgGenetics), CONST.MIN_GENETICS, CONST.MAX_GENETICS);
+            const child = new Creature(hybridId, 1, childGenetics);
+            return {
+                success: true, child,
+                parents: [creature1.name, creature2.name],
+                isHybrid: true,
+                hybridMsg: `Um híbrido raro surgiu! ${child.name} é uma das criaturas lendárias de Mestre Aldric!`
+            };
+        }
+
         // Filhote é da espécie de um dos pais (aleatório)
         const parentTemplate = Helpers.chance(0.5) ? creature1 : creature2;
-        const templateData = CreaturesDB[parentTemplate.templateId];
+
+        // Se ambos são iniciais e não gerou híbrido (75%), filhote é criatura comum aleatória
+        let baseTemplateId = parentTemplate.templateId;
+        if (p1Starter && p2Starter) {
+            const normalIds = Object.keys(CreaturesDB).filter(id => CreaturesDB[id].rarity !== 'starter');
+            if (normalIds.length > 0) baseTemplateId = Helpers.randomPick(normalIds);
+        }
 
         // Se a criatura evoluiu, filhote nasce na forma base
-        let baseTemplateId = parentTemplate.templateId;
-        // Procura forma base (simples: verifica se alguma criatura evolui para esta)
         for (const [id, data] of Object.entries(CreaturesDB)) {
-            if (data.evolution && data.evolution.to === parentTemplate.templateId) {
+            if (data.evolution && data.evolution.to === baseTemplateId) {
                 baseTemplateId = id;
                 break;
             }

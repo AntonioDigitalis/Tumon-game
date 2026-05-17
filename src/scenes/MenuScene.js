@@ -114,13 +114,7 @@ class MenuScene extends Phaser.Scene {
 
     newGame() {
         saveSystem.deleteSave();
-        const defaultData = saveSystem.getDefaultSaveData();
-        const starterChoices = ['embrill', 'aquafen', 'thornvine'];
-        const starterId = Helpers.randomPick(starterChoices);
-        const starter = new Creature(starterId, 5, 1);
-        defaultData.party = [starter.serialize()];
-        saveSystem.save(defaultData);
-        this.scene.start('WorldScene');
+        this.scene.start('StarterScene');
     }
 
     continueGame() {

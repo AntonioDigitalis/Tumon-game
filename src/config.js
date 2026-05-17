@@ -23,6 +23,7 @@ const gameConfig = {
     scene: [
         BootScene,
         MenuScene,
+        StarterScene,
         WorldScene,
         BattleScene,
         InventoryScene,
