@@ -47,17 +47,8 @@ class BreedingSystem {
         }
         childGenetics = Helpers.clamp(childGenetics, CONST.MIN_GENETICS, CONST.MAX_GENETICS);
 
-        // Chance shiny
-        const parentShinyBonus = (creature1.isShiny ? 0.05 : 0) + (creature2.isShiny ? 0.05 : 0);
-        const shinyChance = baseTemplate.shinyChance + parentShinyBonus + (childGenetics >= 5 ? 0.5 : 0);
-        const isShiny = Helpers.chance(shinyChance);
-
-        // Cria filhote
+        // Cria filhote (shiny definido automaticamente pelo construtor se genetics === 5)
         const child = new Creature(baseTemplateId, 1, childGenetics);
-        child.isShiny = isShiny;
-        if (isShiny) {
-            child.spriteColor = baseTemplate.spriteShinyColor;
-        }
 
         // Herda parte dos stats via mutação
         if (Helpers.chance(CONST.BREED_MUTATION_CHANCE * 2)) { // Breeding tem mais chance de mutação

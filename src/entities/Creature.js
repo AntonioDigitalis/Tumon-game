@@ -39,13 +39,11 @@ class Creature {
         // usa PNG se existir
         this.spriteKey = template.spriteKey || template.id;
 
-        // shiny override
+        // shiny: exclusivo para genética 5/5
         if (this.genetics >= 5) {
             this.isShiny = true;
-
-            if (template.spriteShinyKey) {
-                this.spriteKey = template.spriteShinyKey;
-            }
+            if (template.spriteShinyKey) this.spriteKey = template.spriteShinyKey;
+            if (template.spriteShinyColor) this.spriteColor = template.spriteShinyColor;
         }
 
         this.currentHp = this.getMaxHp();
