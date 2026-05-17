@@ -125,11 +125,11 @@ class BattleUI {
     }
 
     createCreatureSprite(key, creature, x, y) {
-       const size = key === 'player' ? 96 : 80;
-        const sprite = this.scene.add.image(x, y, creature.spriteKey);
+        const size = key === 'player' ? 96 : 80;
+        const sprite = this.scene.add.image(x, y, getSpriteKey(this.scene, creature.spriteKey));
 
-       sprite.setScale(0.3);
-      sprite.setDepth(2);
+        sprite.setScale(0.3);
+        sprite.setDepth(2);
         
         // Ícone do elemento
         const elementSymbols = {
