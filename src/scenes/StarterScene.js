@@ -379,6 +379,7 @@ class StarterScene extends Phaser.Scene {
         const barX   = labelX + 28;        // início da barra
         const valW   = 22;                 // espaço para o número à direita
         const barW   = cardW / 2 - barX - valW - 6; // margem direita de 6px
+        const statTexts = [];
         statsData.forEach((stat, i) => {
             const sy = -cardH / 2 + 46 + i * 18;
             // Background da barra
@@ -387,15 +388,15 @@ class StarterScene extends Phaser.Scene {
             // Fill da barra
             statsG.fillStyle(stat.color);
             statsG.fillRect(barX, sy + 2, Math.floor(barW * Math.min(stat.val, 100) / 100), 8);
-            // Abreviação (esquerda, colorida)
-            container.add(this.add.text(labelX, sy - 1, stat.label, {
-                fontFamily: 'Courier New', fontSize: '8px',
-                color: stat.hex, fontStyle: 'bold'
+            // Abreviação
+            statTexts.push(this.add.text(labelX, sy - 1, stat.label, {
+                fontFamily: 'Courier New', fontSize: '10px',
+                color: '#ffffff', fontStyle: 'bold'
             }));
             // Valor numérico (direita da barra)
-            container.add(this.add.text(barX + barW + 3, sy - 1, String(stat.val), {
-                fontFamily: 'Courier New', fontSize: '8px',
-                color: stat.hex
+            statTexts.push(this.add.text(barX + barW + 3, sy - 1, String(stat.val), {
+                fontFamily: 'Courier New', fontSize: '10px',
+                color: '#ffffff', fontStyle: 'bold'
             }));
         });
 
@@ -417,7 +418,7 @@ class StarterScene extends Phaser.Scene {
         });
         hit.on('pointerdown', () => this._pickCreature(id, bg, cardW, cardH, elemColor));
 
-        container.add([bg, glow, spr, nameText, elemText, statsG, hit]);
+        container.add([bg, glow, spr, nameText, elemText, statsG, ...statTexts, hit]);
         this._cardsLayer.add(container);
         this._cards.push({ id, bg, cardW, cardH, elemColor });
     }
