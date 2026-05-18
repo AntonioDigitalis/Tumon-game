@@ -17,7 +17,7 @@ class BattleUI {
         const H = this.H;
 
         // Background
-        this.elements.bg = this.scene.add.rectangle(W / 2, H / 2, W, H, 0x2d4a3e);
+        this.elements.bg = this.scene.add.rectangle(W / 2, H / 2, W, H, 0xa8c8a0);
 
         // Enemy side (top-right)
         this.createCreaturePanel('enemy', enemyCreature, W - 260, 20);
