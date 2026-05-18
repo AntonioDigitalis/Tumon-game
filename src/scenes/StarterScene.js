@@ -614,7 +614,8 @@ class StarterScene extends Phaser.Scene {
 
     // ─── Início do jogo ─────────────────────────────────────────────
     _startGame() {
-        const starter = new Creature(this._selected, 5, 2);
+        const starterGenetics = Helpers.randomInt(2, 5);
+        const starter = new Creature(this._selected, 5, starterGenetics);
         const defaultData = saveSystem.getDefaultSaveData();
         defaultData.party = [starter.serialize()];
         saveSystem.save(defaultData);
