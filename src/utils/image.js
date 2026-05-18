@@ -71,26 +71,33 @@ const SpriteAssetLoader = {
        }
 };
 
-function getSpriteKey(scene, key, forceProc = false) {
+function getSpriteKey(scene, key) {
     if (!key) return 'asset_missing';
 
-    // Tumons iniciais têm arte customizada — usa PNG diretamente (salvo quando forçado procedural)
-    if (!forceProc && key.startsWith('tumon-')) {
-        const missing = scene.game.__missingAssets;
-        if (scene.textures.exists(key) && !(missing && missing.has(key))) {
-            return key;
-        }
+    // --------------------------
+    // tenta sprite PNG primeiro
+    // --------------------------
+    const tex = scene.textures.get(key);
+
+    if (
+        tex &&
+        tex.key !== '__MISSING' &&
+        tex.source &&
+        tex.source[0] &&
+        tex.source[0].width > 0 &&
+        tex.source[0].height > 0
+    ) {
+        return key;
     }
 
-    // Para demais criaturas usa procedural (alguns PNGs têm dimensões problemáticas)
+    // --------------------------
+    // fallback procedural
+    // --------------------------
     const procKey = `proc_${key}`;
     if (scene.textures.exists(procKey)) return procKey;
 
-    // Gera procedural sob demanda — busca por ID ou por spriteKey (ex: 'tumon-fogo' → flamrak)
-    const baseKey = key.replace(/_shiny$/, '');
-    const template = CreaturesDB[key]
-        || CreaturesDB[baseKey]
-        || Object.values(CreaturesDB).find(c => c.spriteKey === key || c.spriteKey === baseKey);
+    // Gera procedural sob demanda (shiny usa dados da forma base)
+    const template = CreaturesDB[key] || CreaturesDB[key.replace(/_shiny$/, '')];
     if (!template) return 'asset_missing';
 
     CreatureSprites._draw(
